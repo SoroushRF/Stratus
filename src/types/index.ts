@@ -15,3 +15,11 @@ export interface ParsedClass {
   days?: Day[];
   location?: string;
 }
+
+export interface University {
+  name: string;
+  shortName: string;
+  campus: string;
+  lat: number;
+  lng: number;
+}

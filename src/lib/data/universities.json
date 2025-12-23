@@ -1,0 +1,100 @@
+[
+  {
+    "name": "University of British Columbia (Vancouver)",
+    "shortName": "UBC",
+    "campus": "Vancouver",
+    "lat": 49.2606,
+    "lng": -123.246
+  },
+  {
+    "name": "University of British Columbia (Okanagan)",
+    "shortName": "UBC",
+    "campus": "Okanagan",
+    "lat": 49.9395,
+    "lng": -119.3948
+  },
+  {
+    "name": "University of Toronto (St. George)",
+    "shortName": "UofT",
+    "campus": "St. George",
+    "lat": 43.6629,
+    "lng": -79.3957
+  },
+  {
+    "name": "University of Toronto (Mississauga)",
+    "shortName": "UofT",
+    "campus": "UTM",
+    "lat": 43.5482,
+    "lng": -79.6635
+  },
+  {
+    "name": "University of Toronto (Scarborough)",
+    "shortName": "UofT",
+    "campus": "UTSC",
+    "lat": 43.7841,
+    "lng": -79.1868
+  },
+  {
+    "name": "York University (Keele)",
+    "shortName": "York",
+    "campus": "Keele",
+    "lat": 43.7735,
+    "lng": -79.5019
+  },
+  {
+    "name": "York University (Glendon)",
+    "shortName": "York",
+    "campus": "Glendon",
+    "lat": 43.7279,
+    "lng": -79.377
+  },
+  {
+    "name": "York University (Markham)",
+    "shortName": "York",
+    "campus": "Markham",
+    "lat": 43.8561,
+    "lng": -79.34
+  },
+  {
+    "name": "McGill University (Downtown)",
+    "shortName": "McGill",
+    "campus": "Downtown",
+    "lat": 45.5048,
+    "lng": -73.5772
+  },
+  {
+    "name": "McGill University (Macdonald)",
+    "shortName": "McGill",
+    "campus": "Macdonald",
+    "lat": 45.4056,
+    "lng": -73.9421
+  },
+  {
+    "name": "University of Waterloo (Main)",
+    "shortName": "Waterloo",
+    "campus": "Main",
+    "lat": 43.4723,
+    "lng": -80.5449
+  },
+  {
+    "name": "University of Waterloo (Kitchener)",
+    "shortName": "Waterloo",
+    "campus": "Health Sciences",
+    "lat": 43.4475,
+    "lng": -80.485
+  },
+  {
+    "name": "University of Waterloo (Cambridge)",
+    "shortName": "Waterloo",
+    "campus": "Architecture",
+    "lat": 43.356,
+    "lng": -80.316
+  },
+  {
+    "name": "University of Waterloo (Stratford)",
+    "shortName": "Waterloo",
+    "campus": "Interaction Design",
+    "lat": 43.3725,
+    "lng": -80.9768
+  }
+]
