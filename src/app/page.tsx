@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Upload, Loader2, CheckCircle2, AlertCircle, FileText, Calendar, Clock, MapPin } from "lucide-react";
+import { Upload, Loader2, CheckCircle2, AlertCircle, FileText, Calendar, Clock, MapPin, ChevronDown } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { processSchedule } from "@/app/actions";
 import { ParsedClass } from "@/types";
 
@@ -94,11 +95,11 @@ export default function Home() {
                     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
                         <div className="flex items-center justify-between pb-6 border-b border-white/10">
                             <div>
-                                <h2 className="text-3xl font-bold flex items-center gap-3">
+                                <h2 className="text-3xl font-bold flex items-center gap-3 text-white">
                                     <CheckCircle2 className="text-emerald-400 w-8 h-8" />
-                                    Engine Output
+                                    Parsing Results
                                 </h2>
-                                <p className="text-zinc-400 mt-1">Detected {classes.length} distinct classes.</p>
+                                <p className="text-zinc-400 mt-1 font-medium">Grouped by course title.</p>
                             </div>
                             <button 
                                 onClick={() => setStatus("idle")}
@@ -109,45 +110,28 @@ export default function Home() {
                         </div>
 
                         <div className="grid grid-cols-1 gap-4">
-                            {classes.length > 0 ? (
-                                classes.map((cls, i) => (
-                                    <div key={i} className="group p-8 rounded-[32px] bg-white/5 border border-white/10 hover:border-primary/30 transition-all">
-                                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                                            <div className="space-y-2">
-                                                <h4 className="text-2xl font-black tracking-tight group-hover:text-primary transition-colors italic">
-                                                    {cls.name}
-                                                </h4>
-                                                <div className="flex flex-wrap gap-4 text-zinc-400 text-sm font-medium">
-                                                    <span className="flex items-center gap-1.5 bg-white/5 px-3 py-1 rounded-full border border-white/5">
-                                                        <Clock className="w-3.5 h-3.5" />
-                                                        {cls.startTime} - {cls.endTime}
-                                                    </span>
-                                                    {cls.location && (
-                                                        <span className="flex items-center gap-1.5 bg-white/5 px-3 py-1 rounded-full border border-white/5 uppercase tracking-wider text-[10px]">
-                                                            <MapPin className="w-3.5 h-3.5" />
-                                                            {cls.location}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            </div>
-                                            
-                                            {cls.days && cls.days.length > 0 && (
-                                                <div className="flex gap-1.5">
-                                                    {cls.days.map((day) => (
-                                                        <span key={day} className="w-10 h-10 rounded-xl bg-primary/20 text-primary flex items-center justify-center text-[10px] font-black border border-primary/20">
-                                                            {day.substring(0, 3)}
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            )}
+                            {(() => {
+                                // Grouping logic
+                                const grouped = classes.reduce((acc, cls) => {
+                                    if (!acc[cls.name]) acc[cls.name] = [];
+                                    acc[cls.name].push(cls);
+                                    return acc;
+                                }, {} as Record<string, ParsedClass[]>);
+
+                                const courseNames = Object.keys(grouped);
+
+                                if (courseNames.length === 0) {
+                                    return (
+                                        <div className="text-center py-20 bg-white/5 rounded-[40px] border border-white/10 italic text-zinc-500">
+                                            No classes detected in the provided document.
                                         </div>
-                                    </div>
-                                ))
-                            ) : (
-                                <div className="text-center py-20 bg-white/5 rounded-[40px] border border-white/10 italic text-zinc-500">
-                                    No classes detected in the provided document.
-                                </div>
-                            )}
+                                    );
+                                }
+
+                                return courseNames.map((name, i) => (
+                                    <CourseDropdown key={i} title={name} instances={grouped[name]} />
+                                ));
+                            })()}
                         </div>
                     </div>
                 )}
@@ -155,9 +139,91 @@ export default function Home() {
                 <footer className="mt-20 pt-12 border-t border-white/5 text-center flex items-center justify-center gap-4 opacity-50 grayscale pointer-events-none">
                     <span className="text-[10px] uppercase font-black tracking-[0.2em]">Lean Output Phase</span>
                     <div className="w-1 h-1 rounded-full bg-primary" />
-                    <span className="text-[10px] uppercase font-black tracking-[0.2em]">Gemini AI</span>
+                    <span className="text-[10px] uppercase font-black tracking-[0.2em]">Gemini 2.5 Flash Lite</span>
                 </footer>
             </div>
         </main>
     );
 }
+
+
+
+function CourseDropdown({ title, instances }: { title: string; instances: ParsedClass[] }) {
+    const [isOpen, setIsOpen] = useState(false);
+
+    return (
+        <div className={`
+            group rounded-[32px] border transition-all duration-500 overflow-hidden
+            ${isOpen ? "bg-white/10 border-primary/30 shadow-[0_0_40px_rgba(139,92,246,0.1)]" : "bg-white/5 border-white/10 hover:border-white/20"}
+        `}>
+            <button 
+                onClick={() => setIsOpen(!isOpen)}
+                className="w-full px-8 py-7 flex items-center justify-between text-left relative z-10"
+            >
+                <div className="space-y-1">
+                    <h4 className="text-2xl font-black tracking-tight italic group-hover:text-primary transition-colors">
+                        {title}
+                    </h4>
+                    <p className="text-xs text-zinc-500 font-bold uppercase tracking-widest flex items-center gap-2">
+                        <span className={`w-1.5 h-1.5 rounded-full ${isOpen ? "bg-primary animate-pulse" : "bg-zinc-600"}`} />
+                        {instances.length} {instances.length === 1 ? 'Session' : 'Sessions'}
+                    </p>
+                </div>
+                <div className={`
+                    w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center transition-all duration-500
+                    ${isOpen ? "bg-primary/20 text-primary" : "text-zinc-500"}
+                `}>
+                    <ChevronDown className={`w-6 h-6 transition-transform duration-500 ${isOpen ? "rotate-180" : "rotate-0"}`} />
+                </div>
+            </button>
+
+            <AnimatePresence>
+                {isOpen && (
+                    <motion.div 
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
+                    >
+                        <div className="px-8 pb-8 space-y-3">
+                            {instances.map((instance, idx) => (
+                                <motion.div 
+                                    key={idx}
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: idx * 0.05 + 0.1 }}
+                                    className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-2xl bg-black/40 border border-white/5 hover:border-white/10 transition-colors"
+                                >
+                                    <div className="flex flex-wrap gap-4 text-zinc-300 text-sm font-medium">
+                                        <span className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-xl border border-white/5">
+                                            <Clock className="w-4 h-4 text-primary" />
+                                            {instance.startTime} - {instance.endTime}
+                                        </span>
+                                        {instance.location && (
+                                            <span className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-xl border border-white/5 uppercase tracking-wider text-[10px]">
+                                                <MapPin className="w-4 h-4 text-primary" />
+                                                {instance.location}
+                                            </span>
+                                        )}
+                                    </div>
+                                    
+                                    {instance.days && instance.days.length > 0 && (
+                                        <div className="flex gap-1.5">
+                                            {instance.days.map((day) => (
+                                                <span key={day} className="px-3 py-1.5 rounded-xl bg-primary/20 text-primary border border-primary/20 text-[10px] font-black uppercase tracking-tighter">
+                                                    {day}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    )}
+                                </motion.div>
+                            ))}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+}
+
+
