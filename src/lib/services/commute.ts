@@ -70,6 +70,28 @@ export const getClothingAdvice = (weather: WeatherData): string => {
 };
 
 /**
+ * Converts a string address into "lat,lng" coordinates.
+ */
+export const getCoordinatesFromAddress = async (address: string): Promise<string | null> => {
+  if (!GOOGLE_MAPS_KEY) return null;
+
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${GOOGLE_MAPS_KEY}`;
+
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+    if (data.status === "OK") {
+      const { lat, lng } = data.results[0].geometry.location;
+      return `${lat},${lng}`;
+    }
+    return null;
+  } catch (error) {
+    console.error("Geocoding Error:", error);
+    return null;
+  }
+};
+
+/**
  * Master function to assemble all advice for a specific class instance.
  */
 export const assembleRecommendation = async (

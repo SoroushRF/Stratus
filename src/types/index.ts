@@ -20,6 +20,7 @@ export interface User {
   email: string;
   name?: string | null;
   campusLocation: string;
+  homeLocation?: string | null;
   commuteMethod: CommuteMethod;
   createdAt: Date;
   updatedAt: Date;

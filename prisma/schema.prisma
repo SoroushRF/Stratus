@@ -32,6 +32,7 @@ model User {
   email          String        @unique
   name           String?
   campusLocation String
+  homeLocation   String?
   commuteMethod  CommuteMethod @default(WALKING)
   classes        Class[]
   

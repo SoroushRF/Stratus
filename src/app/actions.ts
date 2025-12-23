@@ -6,6 +6,7 @@ import { getForecast, findClosestForecast } from "@/lib/services/weather";
 import { assembleRecommendation } from "@/lib/services/commute";
 import { CommuteMethod, Day } from "@/types";
 import { revalidatePath } from "next/cache";
+import universities from "@/lib/data/universities.json";
 
 /**
  * Action: Create or Update User Profile
@@ -14,6 +15,7 @@ export async function onboardUser(formData: {
   email: string;
   name: string;
   campusLocation: string;
+  homeLocation: string;
   commuteMethod: CommuteMethod;
 }) {
   const user = await prisma.user.upsert({
@@ -21,12 +23,14 @@ export async function onboardUser(formData: {
     update: {
       name: formData.name,
       campusLocation: formData.campusLocation,
+      homeLocation: formData.homeLocation,
       commuteMethod: formData.commuteMethod,
     },
     create: {
       email: formData.email,
       name: formData.name,
       campusLocation: formData.campusLocation,
+      homeLocation: formData.homeLocation,
       commuteMethod: formData.commuteMethod,
     },
   });
@@ -103,10 +107,11 @@ export async function getDashboardData(userEmail: string) {
     cls.days.includes(todayDay)
   );
 
-  // 2. Mock coordinates for the university (in production, we'd lookup from our JSON)
-  // For now, using a placeholder center point
-  const universityLat = 43.6629; // Placeholder (UofT)
-  const universityLng = -79.3957;
+  // 2. Lookup university coordinates from our JSON database
+  const university = universities.find(u => u.name === user.campusLocation);
+  
+  const universityLat = university?.lat || 43.6629; // Fallback to UofT if not found
+  const universityLng = university?.lng || -79.3957;
 
   // 3. Fetch Weather Forecast
   const weatherForecast = await getForecast(universityLat, universityLng);
@@ -121,11 +126,11 @@ export async function getDashboardData(userEmail: string) {
 
       const weather = findClosestForecast(weatherForecast, classDate);
       
-      // Calculate Recommendation (Mocking origin as "CN Tower" for now)
+      // 4. Calculate Recommendation
       const recommendation = await assembleRecommendation(
-        "43.6426,-79.3871", // Mock User Home
+        user.homeLocation || "Toronto, ON", // Use saved home or fallback
         `${universityLat},${universityLng}`,
-        user.commuteMethod,
+        user.commuteMethod as CommuteMethod,
         weather
       );
 
