@@ -38,3 +38,10 @@ export interface WeatherData {
   date: string; // ISO date string
   hourlyForecasts: HourlyForecast[];
 }
+
+export interface AttireRecommendation {
+  recommendation: string; // Brief outfit description
+  reasoning: string; // Why this outfit works
+  accessories: string[]; // Useful items to bring
+  priority: "essential" | "suggested"; // How critical this recommendation is
+}

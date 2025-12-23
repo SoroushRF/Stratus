@@ -29,8 +29,37 @@ yarn-error.log*
 # Databases
 *.db
 *.db-journal
+*.sqlite
+*.sqlite3
 
-# VS Code / OS
+# IDE / Editors
 .vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# OS
 .DS_Store
 Thumbs.db
+Desktop.ini
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Temporary / Build artifacts
+*.log
+*.tmp
+*.temp
+ts_errors.txt
+.turbo/
+
+# Misc
+.vercel
+.env*.local
