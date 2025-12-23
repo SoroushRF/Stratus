@@ -33,6 +33,9 @@ export function getDummyWeatherForDate(targetDate: string): WeatherData {
   const targetMonth = target.getMonth();
   const targetDay = target.getDate();
 
+  console.log("getDummyWeatherForDate called with:", targetDate);
+  console.log("Target month/day:", targetMonth, targetDay);
+
   // Filter hourly data for the target date (ignoring year)
   const dayForecasts = openWeatherRaw.hourly
     .map((entry: any) => {
@@ -46,6 +49,8 @@ export function getDummyWeatherForDate(targetDate: string): WeatherData {
     })
     .filter((item: any) => item.matches)
     .map((item: any) => convertOpenWeatherHour(item.entry));
+
+  console.log("Found", dayForecasts.length, "hourly forecasts for", targetDate);
 
   return {
     location: "Dummy Campus",
