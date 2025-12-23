@@ -5,7 +5,7 @@ import { ScheduleUpload } from "@/components/upload/schedule-upload";
 import { ValidationForm } from "@/components/upload/validation-form";
 import { SkeletonCards } from "@/components/ui/skeleton-cards";
 import { Sparkles } from "lucide-react";
-import { Class, Day, CommuteMethod } from "@/types";
+import { Class, Day } from "@/types";
 import Link from "next/link";
 import { OnboardingForm } from "@/components/upload/onboarding-form";
 import { onboardUser, saveSchedule } from "@/app/actions";
@@ -53,8 +53,6 @@ export default function Home() {
         email: string;
         name: string;
         campusLocation: string;
-        homeLocation: string;
-        commuteMethod: CommuteMethod;
     }) => {
         setIsSaving(true);
         try {
@@ -83,17 +81,17 @@ export default function Home() {
                     <div className="space-y-6 max-w-3xl">
                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full glass-border bg-white/5 backdrop-blur-md text-primary text-xs font-semibold tracking-wider uppercase">
                             <Sparkles className="w-3 h-3" />
-                            AI-Powered Commute Assistant
+                            AI-Powered Attire Sync
                         </div>
                         <h1 className="text-5xl md:text-7xl font-black tracking-tight leading-tight">
                             Elevate Your Daily <br />
                             <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-purple-400 to-blue-400 text-glow">
-                                Commute Experience
+                                Campus Experience
                             </span>
                         </h1>
                         <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
                             Stratus parses your student schedule and cross-references it with real-time weather
-                            to recommend the perfect outfit, essential tools, and the safest vehicle for your day.
+                            to recommend the perfect outfit and essential tools for your day.
                         </p>
                     </div>
 
@@ -107,9 +105,9 @@ export default function Home() {
                                 icon: "👕"
                             },
                             {
-                                title: "Safety First",
-                                desc: "Walking, biking, or driving? We suggest the safest method based on road conditions.",
-                                icon: "🚗"
+                                title: "Adaptive Planning",
+                                desc: "Weather changes fast. We sync with the latest forecast for your specific class times.",
+                                icon: "☁️"
                             },
                             {
                                 title: "Gear Up",

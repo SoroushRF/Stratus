@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,62 +7,35 @@ datasource db {
   url      = "file:./dev.db"
 }
 
-enum CommuteMethod {
-  WALKING
-  DRIVING
-  BIKING
-  TRANSIT
-}
-
-enum Day {
-  MONDAY
-  TUESDAY
-  WEDNESDAY
-  THURSDAY
-  FRIDAY
-  SATURDAY
-  SUNDAY
-}
-
 model User {
-  id             String        @id @default(uuid())
-  email          String        @unique
+  id             String   @id @default(uuid())
+  email          String   @unique
   name           String?
   campusLocation String
-  homeLocation   String?
-  commuteMethod  CommuteMethod @default(WALKING)
   classes        Class[]
-  
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
 model Class {
-  id         String       @id @default(uuid())
-  name       String
-  startTime  String       // e.g., "14:00"
-  endTime    String
-  days       String       // stored as comma-separated values (e.g. "MONDAY,WEDNESDAY")
-  location   String       // building/room
-  
-  userId     String
-  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  weatherLogs WeatherLog[]
-  
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @updatedAt
+  id        String   @id @default(uuid())
+  name      String
+  startTime String
+  endTime   String
+  days      String
+  location  String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model WeatherLog {
   id           String   @id @default(uuid())
   temp         Float
-  condition    String   // e.g., "Rain"
+  condition    String
   precipChance Float
-  
   classId      String
-  class        Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
-  
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }

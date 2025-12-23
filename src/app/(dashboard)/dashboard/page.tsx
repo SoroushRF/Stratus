@@ -111,8 +111,8 @@ function DashboardContent() {
                     </div>
                     <div className="w-[1px] h-8 bg-white/10" />
                     <div className="text-right">
-                        <p className="text-xs text-muted-foreground uppercase font-bold">Commute Safety</p>
-                        <p className="text-xl font-black text-emerald-400 font-mono tracking-tighter">SECURE</p>
+                        <p className="text-xs text-muted-foreground uppercase font-bold">Condition</p>
+                        <p className="text-xl font-black text-emerald-400 font-mono tracking-tighter">{data.classSchedules[0]?.weather?.condition?.toUpperCase() || "N/A"}</p>
                     </div>
                 </div>
             </motion.div>
@@ -122,15 +122,12 @@ function DashboardContent() {
                 <div className="flex items-center justify-between">
                     <h2 className="text-2xl font-bold">AI Recommendations</h2>
                 </div>
-                <RecommendationHero 
-                    recommendation={{
-                        clothing: [primaryRecommendation.clothingRecommendation],
-                        tools: ["Umbrella (if precip > 40%)", "Water Bottle", "Campus Gear"],
-                        commuteMethod: primaryRecommendation.method,
-                        commuteAdvice: primaryRecommendation.warning || "Your commute looks clear and safe today."
-                    }} 
-                    summary={`Expected travel time: ${primaryRecommendation.estimatedTime} mins via ${primaryRecommendation.method.toLowerCase()}.`} 
-                />
+                {data.recommendation && (
+                    <RecommendationHero 
+                        recommendation={data.recommendation} 
+                        summary={`Optimal attire for your ${data.classSchedules[0].startTime} class.`} 
+                    />
+                )}
             </section>
 
             {/* Timeline Section */}

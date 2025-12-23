@@ -10,7 +10,7 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-    title: "Stratus | Smart Syllabus & Weather Dashboard",
+    title: "Stratus | Smart Schedule & Attire Sync",
     description: "Personalized daily commute and clothing advice based on your academic schedule and real-time weather.",
 };
 

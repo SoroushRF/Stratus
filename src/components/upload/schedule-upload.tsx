@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { Upload, FileText, X, CheckCircle2, Loader2, AlertCircle } from "lucide-react";
-import { processSyllabus } from "@/app/actions";
+import { processSchedule } from "@/app/actions";
 
 interface ScheduleUploadProps {
     onParsed: (classes: any[]) => void;
@@ -51,7 +51,7 @@ export function ScheduleUpload({ onParsed }: ScheduleUploadProps) {
             reader.readAsDataURL(file);
             reader.onload = async () => {
                 const base64Data = (reader.result as string).split(",")[1];
-                const response = await processSyllabus(base64Data, file.type);
+                const response = await processSchedule(base64Data, file.type);
 
                 if (response.success && response.data) {
                     setStatus("success");

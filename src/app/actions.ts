@@ -1,10 +1,10 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { parseSyllabus } from "@/lib/services/gemini";
+import { extractSchedule } from "@/lib/services/gemini";
 import { getForecast, findClosestForecast } from "@/lib/services/weather";
-import { assembleRecommendation } from "@/lib/services/commute";
-import { CommuteMethod, Day, Class } from "@/types";
+import { generateAttirePlan } from "@/lib/services/attire";
+import { Day, Class } from "@/types";
 import { revalidatePath } from "next/cache";
 import universities from "@/lib/data/universities.json";
 
@@ -15,8 +15,6 @@ export async function onboardUser(formData: {
   email: string;
   name: string;
   campusLocation: string;
-  homeLocation: string;
-  commuteMethod: CommuteMethod;
 }) {
   console.log("Onboarding user:", formData.email);
   const user = await prisma.user.upsert({
@@ -24,15 +22,11 @@ export async function onboardUser(formData: {
     update: {
       name: formData.name,
       campusLocation: formData.campusLocation,
-      homeLocation: formData.homeLocation,
-      commuteMethod: formData.commuteMethod as any,
     },
     create: {
       email: formData.email,
       name: formData.name,
       campusLocation: formData.campusLocation,
-      homeLocation: formData.homeLocation,
-      commuteMethod: formData.commuteMethod as any,
     },
   });
 
@@ -41,11 +35,11 @@ export async function onboardUser(formData: {
 }
 
 /**
- * Action: Parse Syllabus via Gemini
+ * Action: Parse Schedule via Gemini
  */
-export async function processSyllabus(base64Data: string, mimeType: string) {
+export async function processSchedule(base64Data: string, mimeType: string) {
   try {
-    const classes = await parseSyllabus(base64Data, mimeType);
+    const classes = await extractSchedule(base64Data, mimeType);
     return { success: true, data: classes };
   } catch (error) {
     return { success: false, error: (error as Error).message };
@@ -113,8 +107,6 @@ export async function getDashboardData(email: string) {
               email: "test@example.com",
               name: "Test Student",
               campusLocation: "University of Toronto",
-              homeLocation: "CN Tower, Toronto",
-              commuteMethod: "TRANSIT" as any,
               classes: {
                   create: [
                       { name: "Advanced Computer Science", startTime: "09:00", endTime: "10:30", location: "Hall A - Room 302", days: todayDayName } as any,
@@ -153,35 +145,33 @@ export async function getDashboardData(email: string) {
     // 4. Fetch Weather Forecast
     const weatherForecast = await getForecast(universityLat, universityLng);
 
-    // 5. Build recommendations for each class
-    const classSchedules = await Promise.all(
-      todaysClasses.map(async (cls) => {
-        // Find the specific weather for this class's startTime
-        const [hours, minutes] = cls.startTime.split(":").map(Number);
-        const classDate = new Date();
-        classDate.setHours(hours, minutes, 0, 0);
+    // 5. Package schedules with weather and AI attire
+    const classSchedules = await Promise.all(todaysClasses.map(async (cls) => {
+      const [hours, minutes] = cls.startTime.split(":").map(Number);
+      const classDate = new Date();
+      classDate.setHours(hours, minutes, 0, 0);
 
-        const weather = findClosestForecast(weatherForecast, classDate);
-        
-        // 5. Calculate Recommendation
-        const recommendation = await assembleRecommendation(
-          user!.homeLocation || "Toronto, ON", // Use saved home or fallback
-          `${universityLat},${universityLng}`,
-          user!.commuteMethod as CommuteMethod,
-          weather
-        );
+      const weather = findClosestForecast(weatherForecast, classDate);
+      const attire = await generateAttirePlan(weather, cls.name, cls.startTime);
+      
+      return {
+        ...cls,
+        weather,
+        attire
+      };
+    }));
 
-        return {
-          ...cls,
-          weather,
-          recommendation,
-        };
-      })
-    );
+    // 6. Create Master Recommendation (Top of Dashboard)
+    const recommendation = classSchedules.length > 0 ? {
+      clothingPlan: classSchedules[0].attire,
+      tools: classSchedules[0].attire.accessories,
+      advice: classSchedules[0].attire.rationale
+    } : null;
 
     return {
       user,
       classSchedules,
+      recommendation,
     };
   } catch (error) {
     console.error("Error in getDashboardData:", error);

@@ -1,10 +1,10 @@
 "use client";
 
-import { Class, WeatherForecast } from "@/types";
-import { Cloud, CloudRain, Sun, Thermometer, MapPin, Clock } from "lucide-react";
+import { Class, WeatherForecast, ClothingPlan } from "@/types";
+import { Cloud, CloudRain, Sun, Thermometer, Clock, Shirt } from "lucide-react";
 
 interface WeatherCardProps {
-    cls: Class;
+    cls: Class & { attire?: ClothingPlan };
     weather: WeatherForecast;
 }
 
@@ -33,14 +33,19 @@ export function WeatherCard({ cls, weather }: WeatherCardProps) {
                     </div>
                 </div>
 
+                {cls.attire && (
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 w-fit">
+                    <Shirt className="w-3.5 h-3.5 text-blue-400" />
+                    <span className="text-xs font-bold text-zinc-300">
+                      AI Outfit: {cls.attire.top}, {cls.attire.bottom}
+                    </span>
+                  </div>
+                )}
+
                 <div className="flex gap-6 text-sm font-medium">
                     <div className="flex items-center gap-2 text-zinc-400">
                         <Clock className="w-4 h-4" />
                         <span>{cls.startTime} - {cls.endTime}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-zinc-400">
-                        <MapPin className="w-4 h-4" />
-                        <span>{cls.location}</span>
                     </div>
                 </div>
             </div>
