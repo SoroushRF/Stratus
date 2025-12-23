@@ -16,9 +16,39 @@ export default function Home() {
     const [classWeatherMatches, setClassWeatherMatches] = useState<ClassWeatherMatch[]>([]);
     const [classAttireRecommendations, setClassAttireRecommendations] = useState<ClassAttireRecommendation[]>([]);
     const [masterRecommendation, setMasterRecommendation] = useState<MasterRecommendation | null>(null);
+    const [collapsedClasses, setCollapsedClasses] = useState<Set<number>>(new Set());
     const [selectedUniName, setSelectedUniName] = useState<string>("");
     const [selectedDay, setSelectedDay] = useState<string>("today");
     const [error, setError] = useState<string | null>(null);
+
+    // Helper functions
+    const getWeatherIcon = (condition: string): string => {
+        const c = condition.toLowerCase();
+        if (c.includes("clear") || c.includes("sun")) return "☀️";
+        if (c.includes("cloud")) return "☁️";
+        if (c.includes("rain") || c.includes("drizzle")) return "🌧️";
+        if (c.includes("snow")) return "❄️";
+        if (c.includes("thunder") || c.includes("storm")) return "⛈️";
+        return "🌤️";
+    };
+
+    const getTempLabel = (temp: number): string => {
+        if (temp < 0) return "FREEZING";
+        if (temp < 10) return "COLD";
+        if (temp < 20) return "MILD";
+        if (temp < 30) return "WARM";
+        return "HOT";
+    };
+
+    const toggleClass = (idx: number) => {
+        const newCollapsed = new Set(collapsedClasses);
+        if (newCollapsed.has(idx)) {
+            newCollapsed.delete(idx);
+        } else {
+            newCollapsed.add(idx);
+        }
+        setCollapsedClasses(newCollapsed);
+    };
 
     // Generate day options based on current day
     const getDayOptions = () => {
@@ -263,62 +293,96 @@ export default function Home() {
                                     </div>
                                 )}
 
-                                <h3 style={{ marginBottom: "15px" }}>Classes, Weather & Attire Recommendations</h3>
-                                {classAttireRecommendations.map((rec, idx) => (
-                                    <div 
-                                        key={idx} 
-                                        style={{ 
-                                            marginBottom: "20px", 
-                                            padding: "15px", 
-                                            backgroundColor: "#f9f9f9", 
-                                            border: "1px solid #ddd",
-                                            borderLeft: rec.attire.priority === "essential" ? "4px solid #d32f2f" : "4px solid #000"
-                                        }}
-                                    >
-                                        <h4 style={{ margin: "0 0 10px 0" }}>{rec.class.name}</h4>
-                                        
-                                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", fontSize: "14px", marginBottom: "15px" }}>
-                                            <div>
-                                                <p style={{ margin: "5px 0" }}><strong>Time:</strong> {rec.class.startTime} - {rec.class.endTime}</p>
-                                                <p style={{ margin: "5px 0" }}><strong>Location:</strong> {rec.class.location || "N/A"}</p>
-                                            </div>
-                                            
-                                            {rec.weather ? (
-                                                <div style={{ borderLeft: "2px solid #ccc", paddingLeft: "10px" }}>
-                                                    <p style={{ margin: "5px 0" }}><strong>Weather:</strong> {rec.weather.condition}</p>
-                                                    <p style={{ margin: "5px 0" }}><strong>Temp:</strong> {rec.weather.temp}°C (Feels like {rec.weather.feelsLike}°C)</p>
-                                                    <p style={{ margin: "5px 0" }}><strong>Wind:</strong> {rec.weather.windSpeed} km/h</p>
-                                                </div>
-                                            ) : (
-                                                <div style={{ borderLeft: "2px solid #ccc", paddingLeft: "10px" }}>
-                                                    <p style={{ margin: "5px 0", color: "#999" }}>Weather data unavailable</p>
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        {/* Attire Recommendation Section */}
-                                        <div style={{ 
-                                            padding: "12px", 
-                                            backgroundColor: rec.attire.priority === "essential" ? "#ffebee" : "#e8f5e9",
-                                            borderRadius: "4px",
-                                            borderLeft: rec.attire.priority === "essential" ? "3px solid #d32f2f" : "3px solid #4caf50"
-                                        }}>
-                                            <p style={{ margin: "0 0 8px 0", fontWeight: "bold", fontSize: "15px" }}>
-                                                👔 Recommended Attire
-                                                {rec.attire.priority === "essential" && <span style={{ color: "#d32f2f", marginLeft: "8px" }}>(Essential)</span>}
-                                            </p>
-                                            <p style={{ margin: "5px 0" }}>{rec.attire.recommendation}</p>
-                                            <p style={{ margin: "5px 0", fontSize: "13px", fontStyle: "italic", color: "#666" }}>
-                                                {rec.attire.reasoning}
-                                            </p>
-                                            {rec.attire.accessories.length > 0 && (
-                                                <p style={{ margin: "8px 0 0 0", fontSize: "13px" }}>
-                                                    <strong>Bring:</strong> {rec.attire.accessories.join(", ")}
+                                <h3 style={{ marginBottom: "15px" }}>
+                                    Class Details ({classAttireRecommendations.length} classes)
+                                </h3>
+                                {classAttireRecommendations.map((rec, idx) => {
+                                    const isCollapsed = collapsedClasses.has(idx);
+                                    return (
+                                        <div 
+                                            key={idx} 
+                                            style={{ 
+                                                marginBottom: "15px", 
+                                                padding: "15px", 
+                                                backgroundColor: "#f9f9f9", 
+                                                border: "1px solid #ddd",
+                                                borderLeft: rec.attire.priority === "essential" ? "4px solid #d32f2f" : "4px solid #000"
+                                            }}
+                                        >
+                                            {/* Class Header - Always Visible */}
+                                            <div 
+                                                onClick={() => toggleClass(idx)}
+                                                style={{ cursor: "pointer", userSelect: "none" }}
+                                            >
+                                                <h4 style={{ margin: "0 0 5px 0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                                    <span>{rec.class.name}</span>
+                                                    <span style={{ fontSize: "14px", fontWeight: "normal" }}>
+                                                        {isCollapsed ? "▼ Show Details" : "▲ Hide Details"}
+                                                    </span>
+                                                </h4>
+                                                <p style={{ margin: "0", fontSize: "14px", color: "#666" }}>
+                                                    {rec.class.startTime} - {rec.class.endTime}
+                                                    {rec.weather && ` • ${getWeatherIcon(rec.weather.condition)} ${rec.weather.temp}°C (${getTempLabel(rec.weather.temp)})`}
                                                 </p>
+                                            </div>
+
+                                            {/* Expandable Details */}
+                                            {!isCollapsed && (
+                                                <div style={{ marginTop: "15px" }}>
+                                                    {/* Class & Weather Info */}
+                                                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", fontSize: "14px", marginBottom: "15px" }}>
+                                                        <div>
+                                                            <p style={{ margin: "5px 0" }}><strong>Location:</strong> {rec.class.location || "N/A"}</p>
+                                                        </div>
+                                                        
+                                                        {rec.weather ? (
+                                                            <div style={{ borderLeft: "2px solid #ccc", paddingLeft: "10px" }}>
+                                                                <p style={{ margin: "5px 0" }}>
+                                                                    <strong>Weather:</strong> {getWeatherIcon(rec.weather.condition)} {rec.weather.condition}
+                                                                </p>
+                                                                <p style={{ margin: "5px 0" }}>
+                                                                    <strong>Feels Like:</strong> {rec.weather.feelsLike}°C
+                                                                </p>
+                                                                <p style={{ margin: "5px 0" }}>
+                                                                    <strong>Wind:</strong> {rec.weather.windSpeed} km/h
+                                                                </p>
+                                                                <p style={{ margin: "5px 0" }}>
+                                                                    <strong>Humidity:</strong> {rec.weather.humidity}%
+                                                                </p>
+                                                            </div>
+                                                        ) : (
+                                                            <div style={{ borderLeft: "2px solid #ccc", paddingLeft: "10px" }}>
+                                                                <p style={{ margin: "5px 0", color: "#999" }}>Weather data unavailable</p>
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Attire Recommendation */}
+                                                    <div style={{ 
+                                                        padding: "12px", 
+                                                        backgroundColor: rec.attire.priority === "essential" ? "#ffebee" : "#e8f5e9",
+                                                        borderRadius: "4px",
+                                                        borderLeft: rec.attire.priority === "essential" ? "3px solid #d32f2f" : "3px solid #4caf50"
+                                                    }}>
+                                                        <p style={{ margin: "0 0 8px 0", fontWeight: "bold", fontSize: "15px" }}>
+                                                            👔 Recommended Attire
+                                                            {rec.attire.priority === "essential" && <span style={{ color: "#d32f2f", marginLeft: "8px" }}>(Essential)</span>}
+                                                        </p>
+                                                        <p style={{ margin: "5px 0" }}>{rec.attire.recommendation}</p>
+                                                        <p style={{ margin: "5px 0", fontSize: "13px", fontStyle: "italic", color: "#666" }}>
+                                                            {rec.attire.reasoning}
+                                                        </p>
+                                                        {rec.attire.accessories.length > 0 && (
+                                                            <p style={{ margin: "8px 0 0 0", fontSize: "13px" }}>
+                                                                <strong>Bring:</strong> {rec.attire.accessories.join(", ")}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                </div>
                                             )}
                                         </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         )}
                     </div>
