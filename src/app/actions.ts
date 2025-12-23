@@ -49,7 +49,7 @@ export async function processSchedule(base64Data: string, mimeType: string) {
 /**
  * Action: Save confirmed classes to Database
  */
-export async function saveSchedule(userId: string, classes: any[]) {
+export async function saveSchedule(userId: string, classes: Omit<Class, "id" | "userId" | "createdAt" | "updatedAt">[]) {
   console.log("Saving schedule for user:", userId);
   // Delete existing classes to avoid duplicates on re-upload
   await prisma.class.deleteMany({
@@ -66,7 +66,7 @@ export async function saveSchedule(userId: string, classes: any[]) {
           days: Array.isArray(cls.days) ? cls.days.join(",") : String(cls.days), 
           location: cls.location,
           userId,
-        } as any,
+        },
       })
     )
   );
@@ -82,10 +82,10 @@ export async function getDashboardData(email: string) {
   console.log("Fetching dashboard data for:", email);
   try {
     // 1. Fetch User and their today's schedule
-    let user = await prisma.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: { email },
       include: { classes: true },
-    }) as any;
+    });
 
     const today = new Date();
     const dayIndex = today.getDay();
@@ -102,20 +102,26 @@ export async function getDashboardData(email: string) {
     // Failsafe for testing/demo: create a test user if missing
     if (!user && email === "test@example.com") {
       console.log("Creating test user...");
-      user = await prisma.user.create({
+      await prisma.user.create({
           data: {
               email: "test@example.com",
               name: "Test Student",
               campusLocation: "University of Toronto",
               classes: {
                   create: [
-                      { name: "Advanced Computer Science", startTime: "09:00", endTime: "10:30", location: "Hall A - Room 302", days: todayDayName } as any,
-                      { name: "Environmental Science", startTime: "11:00", endTime: "12:30", location: "Green Lab - Bld 4", days: todayDayName } as any
+                      { name: "Advanced Computer Science", startTime: "09:00", endTime: "10:30", location: "Hall A - Room 302", days: todayDayName },
+                      { name: "Environmental Science", startTime: "11:00", endTime: "12:30", location: "Green Lab - Bld 4", days: todayDayName }
                   ]
               }
-          },
-          include: { classes: true }
-      }) as any;
+          }
+      });
+      // Re-fetch to get the include
+      const newUser = await prisma.user.findUnique({
+        where: { email: "test@example.com" },
+        include: { classes: true }
+      });
+      if (!newUser) throw new Error("Failed to create test user");
+      return getDashboardDataFromUser(newUser, todayDayName);
     }
 
     if (!user) {
@@ -123,11 +129,25 @@ export async function getDashboardData(email: string) {
       throw new Error("User not found");
     }
 
-    // 1. Map database classes back to UI Class type (splitting days)
-    const mappedClasses: Class[] = (user.classes || []).map((cls: any) => ({
-      ...cls,
-      days: (cls.days || "").split(",").filter(Boolean) as Day[]
-    }));
+    return getDashboardDataFromUser(user, todayDayName);
+  } catch (error) {
+    console.error("Error in getDashboardData:", error);
+    throw error;
+  }
+}
+
+async function getDashboardDataFromUser(
+  user: { classes: unknown[]; campusLocation: string },
+  todayDayName: string
+) {
+  // 1. Map database classes back to UI Class type (splitting days)
+  const mappedClasses: Class[] = (user.classes || []).map((cls) => {
+    const c = cls as Record<string, unknown>;
+    return {
+      ...c,
+      days: (c.days as string || "").split(",").filter(Boolean) as Day[],
+    } as unknown as Class;
+  });
 
     // 2. Filter classes for today
     const todaysClasses = mappedClasses.filter((cls) =>
@@ -143,7 +163,19 @@ export async function getDashboardData(email: string) {
     const universityLng = university?.lng || -79.3957;
 
     // 4. Fetch Weather Forecast
-    const weatherForecast = await getForecast(universityLat, universityLng);
+    let weatherForecast;
+    try {
+      weatherForecast = await getForecast(universityLat, universityLng);
+    } catch {
+      console.warn("Weather API failed, using mock data.");
+      weatherForecast = Array.from({ length: 48 }).map((_, i) => ({
+        time: new Date(Date.now() + i * 3600000).toISOString(),
+        temp: 18 + Math.sin(i / 4) * 5,
+        condition: "Clear",
+        icon: "01d",
+        description: "Clear sky"
+      }));
+    }
 
     // 5. Package schedules with weather and AI attire
     const classSchedules = await Promise.all(todaysClasses.map(async (cls) => {
@@ -152,7 +184,20 @@ export async function getDashboardData(email: string) {
       classDate.setHours(hours, minutes, 0, 0);
 
       const weather = findClosestForecast(weatherForecast, classDate);
-      const attire = await generateAttirePlan(weather, cls.name, cls.startTime);
+      
+      let attire;
+      try {
+        attire = await generateAttirePlan(weather, cls.name, cls.startTime);
+      } catch {
+        attire = {
+          outerwear: "Light transition jacket",
+          top: "Cotton layer",
+          bottom: "Daily denim",
+          footwear: "Neutral sneakers",
+          accessories: ["Power bank", "Campus ID"],
+          rationale: "Optimized for indoor-outdoor campus shifts."
+        };
+      }
       
       return {
         ...cls,
@@ -173,8 +218,4 @@ export async function getDashboardData(email: string) {
       classSchedules,
       recommendation,
     };
-  } catch (error) {
-    console.error("Error in getDashboardData:", error);
-    throw error;
-  }
 }
