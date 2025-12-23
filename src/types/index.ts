@@ -2,6 +2,7 @@ export enum CommuteMethod {
   WALKING = "WALKING",
   DRIVING = "DRIVING",
   BIKING = "BIKING",
+  TRANSIT = "TRANSIT",
 }
 
 export enum Day {
