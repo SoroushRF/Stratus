@@ -12,6 +12,7 @@ const universities = universitiesData as University[];
 
 export default function Home() {
     const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+    const [loadingStep, setLoadingStep] = useState<string>("");
     const [classes, setClasses] = useState<ParsedClass[]>([]);
     const [classWeatherMatches, setClassWeatherMatches] = useState<ClassWeatherMatch[]>([]);
     const [classAttireRecommendations, setClassAttireRecommendations] = useState<ClassAttireRecommendation[]>([]);
@@ -87,65 +88,108 @@ export default function Home() {
             reader.readAsDataURL(file);
             reader.onload = async () => {
                 const base64Data = (reader.result as string).split(",")[1];
-                const response = await processSchedule(base64Data, file.type);
+                const mimeType = file.type; // Get the MIME type from the file object
+                try {
+                    setStatus("loading");
+                    setError(null);
+                    setLoadingStep("Parsing schedule with AI...");
 
-                if (response.success && response.data) {
-                    const parsedClasses = response.data;
-                    setClasses(parsedClasses);
+                    const response = await processSchedule(base64Data, mimeType);
 
-                    // Get selected university
-                    const university = universities.find(u => u.name === selectedUniName);
-                    if (!university) {
-                        setStatus("error");
-                        setError("Selected university not found.");
-                        return;
-                    }
+                    if (response.success && response.data) {
+                        const parsedClasses = response.data;
+                        setClasses(parsedClasses);
 
-                    // Resolve the analysis day and date
-                    const actualDay = resolveAnalysisDay(selectedDay);
-                    const analysisDate = getDateForAnalysisDay(selectedDay);
-
-                    // Filter classes for the selected day
-                    const dayClasses = filterClassesByDay(parsedClasses, actualDay);
-
-                    if (dayClasses.length === 0) {
-                        setStatus("error");
-                        setError(`No classes found for ${getDayOptions().find(opt => opt.value === selectedDay)?.label || selectedDay}.`);
-                        return;
-                    }
-
-                    // Fetch weather for the selected campus and date
-                    const weatherData = await getWeatherForecast(
-                        university.lat,
-                        university.lng,
-                        analysisDate
-                    );
-
-                    // Match classes to weather
-                    const matches = matchClassesToWeather(dayClasses, weatherData);
-                    setClassWeatherMatches(matches);
-
-                    // Generate attire recommendations for all classes (server-side)
-                    const attireResponse = await generateAttireRecommendationsAction(matches);
-                    if (attireResponse.success && attireResponse.data) {
-                        setClassAttireRecommendations(attireResponse.data);
-                        
-                        // Generate master recommendation
-                        const masterResponse = await generateMasterRecommendationAction(attireResponse.data);
-                        if (masterResponse.success && masterResponse.data) {
-                            setMasterRecommendation(masterResponse.data);
-                        } else {
-                            console.error("Failed to generate master recommendation:", masterResponse.error);
+                        // Find selected university
+                        const university = universities.find(u => u.name === selectedUniName);
+                        if (!university) {
+                            setStatus("error");
+                            setError("Selected university not found. Please select a valid campus from the list.");
+                            setLoadingStep("");
+                            return;
                         }
-                    } else {
-                        console.error("Failed to generate recommendations:", attireResponse.error);
-                        // Keep weather matches visible even if attire fails
-                    }
 
-                    setStatus("success");
-                } else {
+                        // Resolve the analysis day and date
+                        const actualDay = resolveAnalysisDay(selectedDay);
+                        const analysisDate = getDateForAnalysisDay(selectedDay);
+
+                        // Filter classes for the selected day
+                        const dayClasses = filterClassesByDay(parsedClasses, actualDay);
+
+                        if (dayClasses.length === 0) {
+                            setStatus("error");
+                            setError(`No classes found for ${getDayOptions().find(opt => opt.value === selectedDay)?.label || selectedDay}. Try selecting a different day.`);
+                            setLoadingStep("");
+                            return;
+                        }
+
+                        // Fetch weather
+                        setLoadingStep(`Fetching weather data for ${university.shortName}...`);
+                        let weatherData;
+                        try {
+                            weatherData = await getWeatherForecast(
+                                university.lat,
+                                university.lng,
+                                analysisDate
+                            );
+                        } catch (weatherError) {
+                            console.error("Weather fetch failed:", weatherError);
+                            setStatus("error");
+                            setError("Failed to fetch weather data. Please try again.");
+                            setLoadingStep("");
+                            return;
+                        }
+
+                        // Match classes to weather
+                        const matches = matchClassesToWeather(dayClasses, weatherData);
+                        setClassWeatherMatches(matches);
+
+                        // Check if we have any weather data
+                        const hasWeatherData = matches.some(m => m.weather !== null);
+                        if (!hasWeatherData) {
+                            setStatus("error");
+                            setError("No weather data available for the selected date. The date might be outside the available range.");
+                            setLoadingStep("");
+                            return;
+                        }
+
+                        // Generate attire recommendations
+                        setLoadingStep(`Generating clothing recommendations (${matches.length} classes)...`);
+                        const attireResponse = await generateAttireRecommendationsAction(matches);
+                        
+                        if (attireResponse.success && attireResponse.data) {
+                            setClassAttireRecommendations(attireResponse.data);
+                            
+                            // Generate master recommendation
+                            setLoadingStep("Creating master outfit recommendation...");
+                            const masterResponse = await generateMasterRecommendationAction(attireResponse.data);
+                            
+                            if (masterResponse.success && masterResponse.data) {
+                                setMasterRecommendation(masterResponse.data);
+                            } else {
+                                console.error("Failed to generate master recommendation:", masterResponse.error);
+                                // Continue anyway - individual recommendations are still useful
+                            }
+                        } else {
+                            console.error("Failed to generate recommendations:", attireResponse.error);
+                            setStatus("error");
+                            setError("Failed to generate clothing recommendations. Please try again.");
+                            setLoadingStep("");
+                            return;
+                        }
+
+                        setStatus("success");
+                        setLoadingStep("");
+                    } else {
+                        setStatus("error");
+                        setError(response.error || "Failed to parse schedule. Make sure the file contains a valid schedule.");
+                        setLoadingStep("");
+                    }
+                } catch (err) {
+                    console.error("File processing error:", err);
                     setStatus("error");
-                    setError(response.error || "Failed to parse schedule.");
+                    setError("Error reading file. Please make sure it's a valid PDF or image.");
+                    setLoadingStep("");
                 }
             };
         } catch (err) {
@@ -198,10 +242,26 @@ export default function Home() {
                             style={{ padding: "10px", border: "1px solid #ccc", width: "100%" }}
                         />
                         {!selectedUniName && <p style={{ fontSize: "12px", color: "#666" }}>* Select a campus first</p>}
-                        {status === "loading" && <p><strong>Status: Processing with Gemini...</strong></p>}
+                        {status === "loading" && (
+                            <div style={{ marginTop: "15px", padding: "15px", border: "2px solid #000", backgroundColor: "#f0f0f0" }}>
+                                <p style={{ margin: "0 0 10px 0" }}><strong>Processing...</strong></p>
+                                {loadingStep && (
+                                    <p style={{ margin: "0", fontSize: "14px" }}>
+                                        ⏳ {loadingStep}
+                                    </p>
+                                )}
+                            </div>
+                        )}
                         {status === "error" && (
-                            <div style={{ color: "red", padding: "10px", border: "1px solid red", marginTop: "10px" }}>
-                                Error: {error}
+                            <div style={{ marginTop: "15px", padding: "15px", border: "2px solid #d32f2f", backgroundColor: "#ffebee", color: "#d32f2f" }}>
+                                <p style={{ margin: "0 0 5px 0" }}><strong>❌ Error</strong></p>
+                                <p style={{ margin: "0", fontSize: "14px" }}>{error}</p>
+                                <button 
+                                    onClick={() => setStatus("idle")}
+                                    style={{ marginTop: "10px", padding: "5px 15px", cursor: "pointer", backgroundColor: "#fff", border: "1px solid #d32f2f", color: "#d32f2f" }}
+                                >
+                                    Try Again
+                                </button>
                             </div>
                         )}
                     </div>
