@@ -21,6 +21,7 @@ export default function Home() {
     const [selectedUniName, setSelectedUniName] = useState<string>("");
     const [selectedDay, setSelectedDay] = useState<string>("today");
     const [error, setError] = useState<string | null>(null);
+    const [uploadedFile, setUploadedFile] = useState<{ base64: string; mimeType: string; name: string } | null>(null);
 
     // Helper functions
     const getWeatherIcon = (condition: string): string => {
@@ -80,7 +81,6 @@ export default function Home() {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        setStatus("loading");
         setError(null);
 
         try {
@@ -88,113 +88,119 @@ export default function Home() {
             reader.readAsDataURL(file);
             reader.onload = async () => {
                 const base64Data = (reader.result as string).split(",")[1];
-                const mimeType = file.type; // Get the MIME type from the file object
-                try {
-                    setStatus("loading");
-                    setError(null);
-                    setLoadingStep("Parsing schedule with AI...");
-
-                    const response = await processSchedule(base64Data, mimeType);
-
-                    if (response.success && response.data) {
-                        const parsedClasses = response.data;
-                        setClasses(parsedClasses);
-
-                        // Find selected university
-                        const university = universities.find(u => u.name === selectedUniName);
-                        if (!university) {
-                            setStatus("error");
-                            setError("Selected university not found. Please select a valid campus from the list.");
-                            setLoadingStep("");
-                            return;
-                        }
-
-                        // Resolve the analysis day and date
-                        const actualDay = resolveAnalysisDay(selectedDay);
-                        const analysisDate = getDateForAnalysisDay(selectedDay);
-
-                        // Filter classes for the selected day
-                        const dayClasses = filterClassesByDay(parsedClasses, actualDay);
-
-                        if (dayClasses.length === 0) {
-                            setStatus("error");
-                            setError(`No classes found for ${getDayOptions().find(opt => opt.value === selectedDay)?.label || selectedDay}. Try selecting a different day.`);
-                            setLoadingStep("");
-                            return;
-                        }
-
-                        // Fetch weather
-                        setLoadingStep(`Fetching weather data for ${university.shortName}...`);
-                        let weatherData;
-                        try {
-                            weatherData = await getWeatherForecast(
-                                university.lat,
-                                university.lng,
-                                analysisDate
-                            );
-                        } catch (weatherError) {
-                            console.error("Weather fetch failed:", weatherError);
-                            setStatus("error");
-                            setError("Failed to fetch weather data. Please try again.");
-                            setLoadingStep("");
-                            return;
-                        }
-
-                        // Match classes to weather
-                        const matches = matchClassesToWeather(dayClasses, weatherData);
-                        setClassWeatherMatches(matches);
-
-                        // Check if we have any weather data
-                        const hasWeatherData = matches.some(m => m.weather !== null);
-                        if (!hasWeatherData) {
-                            setStatus("error");
-                            setError("No weather data available for the selected date. The date might be outside the available range.");
-                            setLoadingStep("");
-                            return;
-                        }
-
-                        // Generate attire recommendations
-                        setLoadingStep(`Generating clothing recommendations (${matches.length} classes)...`);
-                        const attireResponse = await generateAttireRecommendationsAction(matches);
-                        
-                        if (attireResponse.success && attireResponse.data) {
-                            setClassAttireRecommendations(attireResponse.data);
-                            
-                            // Generate master recommendation
-                            setLoadingStep("Creating master outfit recommendation...");
-                            const masterResponse = await generateMasterRecommendationAction(attireResponse.data);
-                            
-                            if (masterResponse.success && masterResponse.data) {
-                                setMasterRecommendation(masterResponse.data);
-                            } else {
-                                console.error("Failed to generate master recommendation:", masterResponse.error);
-                                // Continue anyway - individual recommendations are still useful
-                            }
-                        } else {
-                            console.error("Failed to generate recommendations:", attireResponse.error);
-                            setStatus("error");
-                            setError("Failed to generate clothing recommendations. Please try again.");
-                            setLoadingStep("");
-                            return;
-                        }
-
-                        setStatus("success");
-                        setLoadingStep("");
-                    } else {
-                        setStatus("error");
-                        setError(response.error || "Failed to parse schedule. Make sure the file contains a valid schedule.");
-                        setLoadingStep("");
-                    }
-                } catch (err) {
-                    console.error("File processing error:", err);
-                    setStatus("error");
-                    setError("Error reading file. Please make sure it's a valid PDF or image.");
-                    setLoadingStep("");
-                }
+                const mimeType = file.type;
+                setUploadedFile({ base64: base64Data, mimeType, name: file.name });
             };
         } catch (err) {
-            setStatus("error");
             setError("Error reading file.");
+        }
+    };
+
+    const handleAnalyze = async () => {
+        if (!uploadedFile) return;
+
+        setStatus("loading");
+        setError(null);
+
+        try {
+            setLoadingStep("Parsing schedule with AI...");
+
+            const response = await processSchedule(uploadedFile.base64, uploadedFile.mimeType);
+
+            if (response.success && response.data) {
+                const parsedClasses = response.data;
+                setClasses(parsedClasses);
+
+                // Find selected university
+                const university = universities.find(u => u.name === selectedUniName);
+                if (!university) {
+                    setStatus("error");
+                    setError("Selected university not found. Please select a valid campus from the list.");
+                    setLoadingStep("");
+                    return;
+                }
+
+                // Resolve the analysis day and date
+                const actualDay = resolveAnalysisDay(selectedDay);
+                const analysisDate = getDateForAnalysisDay(selectedDay);
+
+                // Filter classes for the selected day
+                const dayClasses = filterClassesByDay(parsedClasses, actualDay);
+
+                if (dayClasses.length === 0) {
+                    setStatus("error");
+                    setError(`No classes found for ${getDayOptions().find(opt => opt.value === selectedDay)?.label || selectedDay}. Try selecting a different day.`);
+                    setLoadingStep("");
+                    return;
+                }
+
+                // Fetch weather
+                setLoadingStep(`Fetching weather data for ${university.shortName}...`);
+                let weatherData;
+                try {
+                    weatherData = await getWeatherForecast(
+                        university.lat,
+                        university.lng,
+                        analysisDate
+                    );
+                } catch (weatherError) {
+                    console.error("Weather fetch failed:", weatherError);
+                    setStatus("error");
+                    setError("Failed to fetch weather data. Please try again.");
+                    setLoadingStep("");
+                    return;
+                }
+
+                // Match classes to weather
+                const matches = matchClassesToWeather(dayClasses, weatherData);
+                setClassWeatherMatches(matches);
+
+                // Check if we have any weather data
+                const hasWeatherData = matches.some(m => m.weather !== null);
+                if (!hasWeatherData) {
+                    setStatus("error");
+                    setError("No weather data available for the selected date. The date might be outside the available range.");
+                    setLoadingStep("");
+                    return;
+                }
+
+                // Generate attire recommendations
+                setLoadingStep(`Generating clothing recommendations (${matches.length} classes)...`);
+                const attireResponse = await generateAttireRecommendationsAction(matches);
+                
+                if (attireResponse.success && attireResponse.data) {
+                    setClassAttireRecommendations(attireResponse.data);
+                    
+                    // Generate master recommendation
+                    setLoadingStep("Creating master outfit recommendation...");
+                    const masterResponse = await generateMasterRecommendationAction(attireResponse.data);
+                    
+                    if (masterResponse.success && masterResponse.data) {
+                        setMasterRecommendation(masterResponse.data);
+                    } else {
+                        console.error("Failed to generate master recommendation:", masterResponse.error);
+                        // Continue anyway - individual recommendations are still useful
+                    }
+                } else {
+                    console.error("Failed to generate recommendations:", attireResponse.error);
+                    setStatus("error");
+                    setError("Failed to generate clothing recommendations. Please try again.");
+                    setLoadingStep("");
+                    return;
+                }
+
+                setStatus("success");
+                setLoadingStep("");
+            } else {
+                setStatus("error");
+                setError(response.error || "Failed to parse schedule. Make sure the file contains a valid schedule.");
+                setLoadingStep("");
+            }
+        } catch (err) {
+            console.error("Analysis error:", err);
+            setStatus("error");
+            setError("Error during analysis. Please try again.");
+            setLoadingStep("");
         }
     };
 
@@ -205,7 +211,7 @@ export default function Home() {
             {status !== "success" && (
                 <div style={{ marginTop: "20px" }}>
                     <div style={{ marginBottom: "30px" }}>
-                        <h3>1. Select Your Campus</h3>
+                        <h3>Select Your Campus</h3>
                         <input 
                             list="universities" 
                             placeholder="Type to search campus..." 
@@ -221,7 +227,7 @@ export default function Home() {
                     </div>
 
                     <div style={{ marginBottom: "30px" }}>
-                        <h3>1.5. Select Analysis Day</h3>
+                        <h3>Select Analysis Day</h3>
                         <select 
                             value={selectedDay}
                             onChange={(e) => setSelectedDay(e.target.value)}
@@ -234,37 +240,71 @@ export default function Home() {
                     </div>
 
                     <div style={{ marginBottom: "30px" }}>
-                        <h3>2. Upload Schedule (PDF/Image)</h3>
+                        <h3>Upload Schedule (PDF/Image)</h3>
                         <input 
                             type="file" 
                             onChange={handleFileChange} 
                             disabled={status === "loading" || !selectedUniName}
+                            accept="image/*,application/pdf"
                             style={{ padding: "10px", border: "1px solid #ccc", width: "100%" }}
                         />
                         {!selectedUniName && <p style={{ fontSize: "12px", color: "#666" }}>* Select a campus first</p>}
-                        {status === "loading" && (
-                            <div style={{ marginTop: "15px", padding: "15px", border: "2px solid #000", backgroundColor: "#f0f0f0" }}>
-                                <p style={{ margin: "0 0 10px 0" }}><strong>Processing...</strong></p>
-                                {loadingStep && (
-                                    <p style={{ margin: "0", fontSize: "14px" }}>
-                                        ⏳ {loadingStep}
-                                    </p>
-                                )}
-                            </div>
-                        )}
-                        {status === "error" && (
-                            <div style={{ marginTop: "15px", padding: "15px", border: "2px solid #d32f2f", backgroundColor: "#ffebee", color: "#d32f2f" }}>
-                                <p style={{ margin: "0 0 5px 0" }}><strong>❌ Error</strong></p>
-                                <p style={{ margin: "0", fontSize: "14px" }}>{error}</p>
-                                <button 
-                                    onClick={() => setStatus("idle")}
-                                    style={{ marginTop: "10px", padding: "5px 15px", cursor: "pointer", backgroundColor: "#fff", border: "1px solid #d32f2f", color: "#d32f2f" }}
-                                >
-                                    Try Again
-                                </button>
+                        {uploadedFile && (
+                            <div style={{ marginTop: "10px", padding: "10px", backgroundColor: "#f0f0f0", border: "1px solid #ccc" }}>
+                                <p style={{ margin: 0, fontSize: "14px" }}>✅ File uploaded: <strong>{uploadedFile.name}</strong></p>
                             </div>
                         )}
                     </div>
+
+                    <div style={{ marginBottom: "30px" }}>
+                        <h3>Ready to Analyze</h3>
+                        <p style={{ fontSize: "14px", color: "#666", marginBottom: "10px" }}>
+                            {!selectedUniName || !uploadedFile 
+                                ? "Complete the steps above to enable analysis."
+                                : "Review your selections above. You can change the campus, day, or upload a different file before analyzing."
+                            }
+                        </p>
+                        <button
+                            onClick={handleAnalyze}
+                            disabled={status === "loading" || !selectedUniName || !uploadedFile}
+                            style={{
+                                padding: "15px 30px",
+                                fontSize: "16px",
+                                fontWeight: "bold",
+                                backgroundColor: (status === "loading" || !selectedUniName || !uploadedFile) ? "#ccc" : "#000",
+                                color: (status === "loading" || !selectedUniName || !uploadedFile) ? "#999" : "#fff",
+                                border: "none",
+                                cursor: (status === "loading" || !selectedUniName || !uploadedFile) ? "not-allowed" : "pointer",
+                                width: "100%",
+                                transition: "all 0.2s ease"
+                            }}
+                        >
+                            {status === "loading" ? "Analyzing..." : "🚀 Analyze Schedule"}
+                        </button>
+                    </div>
+
+                    {status === "loading" && (
+                        <div style={{ marginTop: "15px", padding: "15px", border: "2px solid #000", backgroundColor: "#f0f0f0" }}>
+                            <p style={{ margin: "0 0 10px 0" }}><strong>Processing...</strong></p>
+                            {loadingStep && (
+                                <p style={{ margin: "0", fontSize: "14px" }}>
+                                    ⏳ {loadingStep}
+                                </p>
+                            )}
+                        </div>
+                    )}
+                    {status === "error" && (
+                        <div style={{ marginTop: "15px", padding: "15px", border: "2px solid #d32f2f", backgroundColor: "#ffebee", color: "#d32f2f" }}>
+                            <p style={{ margin: "0 0 5px 0" }}><strong>❌ Error</strong></p>
+                            <p style={{ margin: "0", fontSize: "14px" }}>{error}</p>
+                            <button 
+                                onClick={() => setStatus("idle")}
+                                style={{ marginTop: "10px", padding: "5px 15px", cursor: "pointer", backgroundColor: "#fff", border: "1px solid #d32f2f", color: "#d32f2f" }}
+                            >
+                                Try Again
+                            </button>
+                        </div>
+                    )}
                 </div>
             )}
 
