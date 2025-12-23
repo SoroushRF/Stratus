@@ -486,6 +486,100 @@ export default function Home() {
                             </div>
                         )}
                     </div>
+
+                    {/* Detailed Weather Data Section */}
+                    {classWeatherMatches.length > 0 && (
+                        <div style={{ marginTop: "50px", padding: "20px", border: "2px solid #000", backgroundColor: "#f9f9f9" }}>
+                            <h2 style={{ marginTop: 0, marginBottom: "10px" }}>📊 Detailed Weather Data</h2>
+                            <p style={{ fontSize: "14px", color: "#666", marginBottom: "20px" }}>
+                                Weather conditions throughout your class schedule. Use this data for visualization and analysis.
+                            </p>
+                            
+                            <div style={{ overflowX: "auto" }}>
+                                <table style={{ width: "100%", borderCollapse: "collapse", backgroundColor: "#fff" }}>
+                                    <thead>
+                                        <tr style={{ backgroundColor: "#000", color: "#fff" }}>
+                                            <th style={{ padding: "12px", textAlign: "left", borderBottom: "2px solid #000" }}>Time</th>
+                                            <th style={{ padding: "12px", textAlign: "left", borderBottom: "2px solid #000" }}>Class</th>
+                                            <th style={{ padding: "12px", textAlign: "left", borderBottom: "2px solid #000" }}>Temperature (°C)</th>
+                                            <th style={{ padding: "12px", textAlign: "left", borderBottom: "2px solid #000" }}>Feels Like (°C)</th>
+                                            <th style={{ padding: "12px", textAlign: "left", borderBottom: "2px solid #000" }}>Condition</th>
+                                            <th style={{ padding: "12px", textAlign: "left", borderBottom: "2px solid #000" }}>Humidity (%)</th>
+                                            <th style={{ padding: "12px", textAlign: "left", borderBottom: "2px solid #000" }}>Wind (km/h)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {classWeatherMatches.map((match, idx) => {
+                                            const weather = match.weather;
+                                            if (!weather) return null;
+                                            
+                                            return (
+                                                <tr key={idx} style={{ borderBottom: "1px solid #ddd" }}>
+                                                    <td style={{ padding: "12px", fontWeight: "bold" }}>
+                                                        {match.class.startTime}
+                                                    </td>
+                                                    <td style={{ padding: "12px" }}>
+                                                        {match.class.name}
+                                                    </td>
+                                                    <td style={{ padding: "12px", fontWeight: "bold", color: "#d32f2f" }}>
+                                                        {weather.temp.toFixed(1)}°C
+                                                    </td>
+                                                    <td style={{ padding: "12px", color: "#666" }}>
+                                                        {weather.feelsLike.toFixed(1)}°C
+                                                    </td>
+                                                    <td style={{ padding: "12px" }}>
+                                                        <span style={{ marginRight: "5px" }}>{getWeatherIcon(weather.condition)}</span>
+                                                        {weather.condition}
+                                                    </td>
+                                                    <td style={{ padding: "12px" }}>
+                                                        {weather.humidity}%
+                                                    </td>
+                                                    <td style={{ padding: "12px" }}>
+                                                        {weather.windSpeed.toFixed(1)} km/h
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {/* Summary Stats */}
+                            <div style={{ marginTop: "20px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "15px" }}>
+                                <div style={{ padding: "15px", backgroundColor: "#fff", border: "1px solid #ddd" }}>
+                                    <p style={{ margin: 0, fontSize: "12px", color: "#666", textTransform: "uppercase" }}>Temperature Range</p>
+                                    <p style={{ margin: "5px 0 0 0", fontSize: "20px", fontWeight: "bold" }}>
+                                        {Math.min(...classWeatherMatches.filter(m => m.weather).map(m => m.weather!.temp)).toFixed(1)}°C - {Math.max(...classWeatherMatches.filter(m => m.weather).map(m => m.weather!.temp)).toFixed(1)}°C
+                                    </p>
+                                </div>
+                                <div style={{ padding: "15px", backgroundColor: "#fff", border: "1px solid #ddd" }}>
+                                    <p style={{ margin: 0, fontSize: "12px", color: "#666", textTransform: "uppercase" }}>Avg Temperature</p>
+                                    <p style={{ margin: "5px 0 0 0", fontSize: "20px", fontWeight: "bold" }}>
+                                        {(classWeatherMatches.filter(m => m.weather).reduce((sum, m) => sum + m.weather!.temp, 0) / classWeatherMatches.filter(m => m.weather).length).toFixed(1)}°C
+                                    </p>
+                                </div>
+                                <div style={{ padding: "15px", backgroundColor: "#fff", border: "1px solid #ddd" }}>
+                                    <p style={{ margin: 0, fontSize: "12px", color: "#666", textTransform: "uppercase" }}>Avg Humidity</p>
+                                    <p style={{ margin: "5px 0 0 0", fontSize: "20px", fontWeight: "bold" }}>
+                                        {Math.round(classWeatherMatches.filter(m => m.weather).reduce((sum, m) => sum + m.weather!.humidity, 0) / classWeatherMatches.filter(m => m.weather).length)}%
+                                    </p>
+                                </div>
+                                <div style={{ padding: "15px", backgroundColor: "#fff", border: "1px solid #ddd" }}>
+                                    <p style={{ margin: 0, fontSize: "12px", color: "#666", textTransform: "uppercase" }}>Max Wind Speed</p>
+                                    <p style={{ margin: "5px 0 0 0", fontSize: "20px", fontWeight: "bold" }}>
+                                        {Math.max(...classWeatherMatches.filter(m => m.weather).map(m => m.weather!.windSpeed)).toFixed(1)} km/h
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Export Hint */}
+                            <div style={{ marginTop: "20px", padding: "15px", backgroundColor: "#fff3cd", border: "1px solid #ffc107" }}>
+                                <p style={{ margin: 0, fontSize: "14px", color: "#856404" }}>
+                                    💡 <strong>Tip:</strong> You can copy this table data to create visualizations in tools like Excel, Google Sheets, or Python (matplotlib/plotly).
+                                </p>
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
 

@@ -63,3 +63,6 @@ ts_errors.txt
 # Misc
 .vercel
 .env*.local
+
+# Development / Planning
+.agent/
