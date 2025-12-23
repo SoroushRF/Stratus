@@ -23,3 +23,18 @@ export interface University {
   lat: number;
   lng: number;
 }
+
+export interface HourlyForecast {
+  hour: string; // Format: "HH:00" (e.g., "09:00", "14:00")
+  temp: number; // Temperature in Celsius
+  feelsLike: number; // "Feels like" temperature in Celsius
+  condition: string; // e.g., "Clear", "Rain", "Snow", "Cloudy"
+  windSpeed: number; // Wind speed in km/h
+  humidity: number; // Humidity percentage
+}
+
+export interface WeatherData {
+  location: string; // Campus name
+  date: string; // ISO date string
+  hourlyForecasts: HourlyForecast[];
+}
