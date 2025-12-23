@@ -5,12 +5,17 @@ import { Class } from "@/types";
 import { Check, Edit2, MapPin, Clock, Calendar } from "lucide-react";
 
 interface ValidationFormProps {
-    initialClasses: Class[];
+    initialClasses: any[];
     onConfirm: (classes: Class[]) => void;
 }
 
 export function ValidationForm({ initialClasses, onConfirm }: ValidationFormProps) {
-    const [classes, setClasses] = useState<Class[]>(initialClasses);
+    const [classes, setClasses] = useState<any[]>(() => 
+        initialClasses.map(c => ({
+            ...c,
+            id: c.id || Math.random().toString(36).slice(2, 11)
+        }))
+    );
     const [editingId, setEditingId] = useState<string | null>(null);
 
     const handleUpdate = (id: string, updates: Partial<Class>) => {

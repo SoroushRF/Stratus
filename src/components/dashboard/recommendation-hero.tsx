@@ -2,7 +2,7 @@
 
 import { Recommendation } from "@/types";
 import { motion } from "framer-motion";
-import { Shirt, Briefcase, Car, AlertTriangle, CheckCircle2, Info } from "lucide-react";
+import { Shirt, Briefcase, Car, AlertTriangle, CheckCircle2, Info, Footprints, Bike, Bus } from "lucide-react";
 
 interface RecommendationHeroProps {
     recommendation: Recommendation;
@@ -28,10 +28,12 @@ export function RecommendationHero({ recommendation, summary }: RecommendationHe
     };
 
     const getCommuteIcon = (method: string) => {
-        switch (method) {
-            case "Driving": return <Car className="w-6 h-6" />;
-            default: return <Info className="w-6 h-6" />;
-        }
+        const m = method.toUpperCase();
+        if (m === "DRIVING") return <Car className="w-6 h-6" />;
+        if (m === "WALKING") return <Footprints className="w-6 h-6" />;
+        if (m === "BIKING") return <Bike className="w-6 h-6" />;
+        if (m === "TRANSIT") return <Bus className="w-6 h-6" />;
+        return <Info className="w-6 h-6" />;
     };
 
     return (

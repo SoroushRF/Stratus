@@ -16,7 +16,16 @@ export interface WeatherData {
  */
 export const getForecast = async (lat: number, lon: number): Promise<any> => {
   if (!API_KEY) {
-    throw new Error("OPENWEATHER_API_KEY is not defined in .env");
+    console.warn("OPENWEATHER_API_KEY is not defined. Returning mock forecast.");
+    return {
+      list: Array.from({ length: 40 }, (_, i) => ({
+        dt: Math.floor(Date.now() / 1000) + i * 3600 * 3,
+        main: { temp: 20 + Math.random() * 5, feels_like: 18 + Math.random() * 5 },
+        weather: [{ main: "Clear", icon: "01d" }],
+        pop: 0.1,
+        wind: { speed: 5 }
+      }))
+    };
   }
 
   const response = await fetch(

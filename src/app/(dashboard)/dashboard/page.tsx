@@ -1,86 +1,34 @@
 "use client";
 
+import { useState, useEffect, Suspense } from "react";
 import { DashboardTimeline } from "@/components/dashboard/dashboard-timeline";
 import { RecommendationHero } from "@/components/dashboard/recommendation-hero";
-import { Sparkles, Calendar, MapPin, ArrowLeft } from "lucide-react";
+import { Sparkles, Calendar, MapPin, ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { Class, WeatherForecast, Recommendation, Day } from "@/types";
+import { getDashboardData } from "@/app/actions";
 import { motion } from "framer-motion";
+import { useSearchParams } from "next/navigation";
 
-// Mock Data for Phase 4
-const MOCK_RECOMMENDATION: Recommendation = {
-    clothing: ["Thermal Base Layer", "Windbreaker Jacket", "Comfortable Sneakers"],
-    tools: ["Sturdy Umbrella", "Power Bank", "Campus Map"],
-    commuteMethod: "Driving",
-    commuteAdvice: "Heavy rain starting at 2 PM. Avoid biking or walking long distances to ensure you stay dry for your afternoon labs."
-};
+function DashboardContent() {
+    const [data, setData] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+    const searchParams = useSearchParams();
+    const email = searchParams.get("email") || (typeof window !== "undefined" ? localStorage.getItem("userEmail") : null) || "test@example.com";
 
-const MOCK_SUMMARY = "Expect a mild morning followed by afternoon showers. We recommend driving today to stay dry for your Business Ethics class.";
-
-const MOCK_TIMELINE: Array<{ cls: Class; weather: WeatherForecast }> = [
-    {
-        cls: {
-            id: "1",
-            name: "Advanced Computer Science",
-            startTime: "09:00 AM",
-            endTime: "10:30 AM",
-            location: "Hall A - Room 302",
-            days: [Day.MONDAY, Day.WEDNESDAY],
-            userId: "user-1",
-            createdAt: new Date(),
-            updatedAt: new Date()
-        },
-        weather: {
-            time: "09:00 AM",
-            temp: 18,
-            condition: "Clear",
-            icon: "sun",
-            description: "Sunny with light breeze"
+    useEffect(() => {
+        async function loadData() {
+            try {
+                const result = await getDashboardData(email);
+                setData(result);
+            } catch (error) {
+                console.error("Dashboard Load Error:", error);
+            } finally {
+                setLoading(false);
+            }
         }
-    },
-    {
-        cls: {
-            id: "2",
-            name: "Environmental Science",
-            startTime: "11:00 AM",
-            endTime: "12:30 PM",
-            location: "Green Lab - Bld 4",
-            days: [Day.TUESDAY, Day.THURSDAY],
-            userId: "user-1",
-            createdAt: new Date(),
-            updatedAt: new Date()
-        },
-        weather: {
-            time: "11:00 AM",
-            temp: 20,
-            condition: "Partly Cloudy",
-            icon: "cloud",
-            description: "Passing clouds"
-        }
-    },
-    {
-        cls: {
-            id: "3",
-            name: "Business Ethics",
-            startTime: "02:00 PM",
-            endTime: "03:30 PM",
-            location: "Global Tower - Room 501",
-            days: [Day.MONDAY, Day.WEDNESDAY],
-            userId: "user-1",
-            createdAt: new Date(),
-            updatedAt: new Date()
-        },
-        weather: {
-            time: "02:00 PM",
-            temp: 16,
-            condition: "Rain",
-            icon: "cloud-rain",
-            description: "Light showers expected"
-        }
-    }
-];
+        loadData();
+    }, [email]);
 
-export default function DashboardPage() {
     const containerVariants = {
         hidden: { opacity: 0 },
         visible: {
@@ -93,6 +41,35 @@ export default function DashboardPage() {
         hidden: { opacity: 0, y: 20 },
         visible: { opacity: 1, y: 0 }
     };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center space-y-4">
+                <Loader2 className="w-12 h-12 text-primary animate-spin" />
+                <p className="text-muted-foreground animate-pulse">Synchronizing your schedule with the latest weather...</p>
+            </div>
+        );
+    }
+
+    if (!data || !data.classSchedules || data.classSchedules.length === 0) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center space-y-6 text-center px-4">
+                <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center border border-white/10">
+                    <Calendar className="w-10 h-10 text-muted-foreground" />
+                </div>
+                <div className="space-y-2">
+                    <h2 className="text-2xl font-bold">No Classes Scheduled Today ({new Date().toLocaleDateString('en-US', { weekday: 'long' })})</h2>
+                    <p className="text-muted-foreground">Enjoy your day off! Check back tomorrow for your next sync.</p>
+                </div>
+                <Link href="/" className="text-primary hover:underline flex items-center gap-2">
+                    <ArrowLeft className="w-4 h-4" /> Back to Upload
+                </Link>
+            </div>
+        );
+    }
+
+    // Use the first class's recommendation as the hero summary (simplification)
+    const primaryRecommendation = data.classSchedules[0].recommendation;
 
     return (
         <motion.div
@@ -117,11 +94,11 @@ export default function DashboardPage() {
                         <div className="flex flex-wrap gap-4 text-muted-foreground">
                             <div className="flex items-center gap-2">
                                 <Calendar className="w-4 h-4 text-primary" />
-                                <span>Monday, Dec 23</span>
+                                <span>{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}</span>
                             </div>
                             <div className="flex items-center gap-2">
                                 <MapPin className="w-4 h-4 text-primary" />
-                                <span>University Campus</span>
+                                <span>{data.user.campusLocation}</span>
                             </div>
                         </div>
                     </div>
@@ -130,7 +107,7 @@ export default function DashboardPage() {
                 <div className="flex items-center gap-4 bg-white/5 p-4 rounded-3xl glass-border">
                     <div className="text-right">
                         <p className="text-xs text-muted-foreground uppercase font-bold">Today's Peak</p>
-                        <p className="text-xl font-black">22°C</p>
+                        <p className="text-xl font-black">{Math.max(...data.classSchedules.map((s: any) => s.weather.temp))}°C</p>
                     </div>
                     <div className="w-[1px] h-8 bg-white/10" />
                     <div className="text-right">
@@ -145,7 +122,15 @@ export default function DashboardPage() {
                 <div className="flex items-center justify-between">
                     <h2 className="text-2xl font-bold">AI Recommendations</h2>
                 </div>
-                <RecommendationHero recommendation={MOCK_RECOMMENDATION} summary={MOCK_SUMMARY} />
+                <RecommendationHero 
+                    recommendation={{
+                        clothing: [primaryRecommendation.clothingRecommendation],
+                        tools: ["Umbrella (if precip > 40%)", "Water Bottle", "Campus Gear"],
+                        commuteMethod: primaryRecommendation.method,
+                        commuteAdvice: primaryRecommendation.warning || "Your commute looks clear and safe today."
+                    }} 
+                    summary={`Expected travel time: ${primaryRecommendation.estimatedTime} mins via ${primaryRecommendation.method.toLowerCase()}.`} 
+                />
             </section>
 
             {/* Timeline Section */}
@@ -153,12 +138,35 @@ export default function DashboardPage() {
                 <div className="flex items-center justify-between">
                     <h2 className="text-2xl font-bold">Schedule Timeline</h2>
                     <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest bg-white/5 px-4 py-2 rounded-full">
-                        {MOCK_TIMELINE.length} Classes Today
+                        {data.classSchedules.length} Classes Today
                     </div>
                 </div>
 
-                <DashboardTimeline schedule={MOCK_TIMELINE} />
+                <DashboardTimeline 
+                    schedule={data.classSchedules.map((s: any) => ({
+                        cls: s,
+                        weather: {
+                            time: s.startTime,
+                            temp: s.weather.temp,
+                            condition: s.weather.condition,
+                            icon: s.weather.icon,
+                            description: `${s.weather.condition} at ${s.startTime}`
+                        }
+                    }))} 
+                />
             </section>
         </motion.div>
+    );
+}
+
+export default function DashboardPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex flex-col items-center justify-center">
+                <Loader2 className="w-12 h-12 text-primary animate-spin" />
+            </div>
+        }>
+            <DashboardContent />
+        </Suspense>
     );
 }

@@ -18,13 +18,10 @@ export function Navbar() {
 
                 <nav className="hidden md:flex items-center gap-8">
                     <Link href="/dashboard" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
-                        Dashboard
+                        Live Dashboard
                     </Link>
-                    <Link href="/schedule" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
-                        Schedule
-                    </Link>
-                    <Link href="/weather" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
-                        Weather
+                    <Link href="/" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
+                        Upload Schedule
                     </Link>
                 </nav>
 

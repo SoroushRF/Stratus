@@ -1,12 +1,18 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { Upload, FileText, X, CheckCircle2, Loader2 } from "lucide-react";
+import { Upload, FileText, X, CheckCircle2, Loader2, AlertCircle } from "lucide-react";
+import { processSyllabus } from "@/app/actions";
 
-export function ScheduleUpload() {
+interface ScheduleUploadProps {
+    onParsed: (classes: any[]) => void;
+}
+
+export function ScheduleUpload({ onParsed }: ScheduleUploadProps) {
     const [isDragging, setIsDragging] = useState(false);
     const [file, setFile] = useState<File | null>(null);
-    const [status, setStatus] = useState<"idle" | "uploading" | "success">("idle");
+    const [status, setStatus] = useState<"idle" | "uploading" | "success" | "error">("idle");
+    const [error, setError] = useState<string | null>(null);
 
     const onDragOver = useCallback((e: React.DragEvent) => {
         e.preventDefault();
@@ -38,15 +44,33 @@ export function ScheduleUpload() {
 
     const handleUpload = async (file: File) => {
         setStatus("uploading");
-        // Simulate upload delay
-        setTimeout(() => {
-            setStatus("success");
-        }, 2000);
+        setError(null);
+
+        try {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = async () => {
+                const base64Data = (reader.result as string).split(",")[1];
+                const response = await processSyllabus(base64Data, file.type);
+
+                if (response.success && response.data) {
+                    setStatus("success");
+                    onParsed(response.data);
+                } else {
+                    setStatus("error");
+                    setError(response.error || "Could not parse schedule.");
+                }
+            };
+        } catch (err) {
+            setStatus("error");
+            setError("Error processing file.");
+        }
     };
 
     const reset = () => {
         setFile(null);
         setStatus("idle");
+        setError(null);
     };
 
     return (
@@ -117,6 +141,13 @@ export function ScheduleUpload() {
                             <div className="flex items-center justify-center gap-2 text-emerald-400">
                                 <CheckCircle2 className="w-5 h-5" />
                                 <span className="font-medium">Schedule Parsed Successfully!</span>
+                            </div>
+                        )}
+
+                        {status === "error" && (
+                            <div className="flex items-center justify-center gap-2 text-red-400">
+                                <AlertCircle className="w-5 h-5" />
+                                <span className="font-medium">{error}</span>
                             </div>
                         )}
                     </div>

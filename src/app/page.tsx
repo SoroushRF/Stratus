@@ -5,8 +5,12 @@ import { ScheduleUpload } from "@/components/upload/schedule-upload";
 import { ValidationForm } from "@/components/upload/validation-form";
 import { SkeletonCards } from "@/components/ui/skeleton-cards";
 import { Sparkles } from "lucide-react";
-import { Class, Day } from "@/types";
+import { Class, Day, CommuteMethod } from "@/types";
 import Link from "next/link";
+import { OnboardingForm } from "@/components/upload/onboarding-form";
+import { onboardUser, saveSchedule } from "@/app/actions";
+import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
 
 // Mock Data for demonstration
 const MOCK_CLASSES: Class[] = [
@@ -35,16 +39,41 @@ const MOCK_CLASSES: Class[] = [
 ];
 
 export default function Home() {
-    const [view, setView] = useState<"upload" | "loading" | "validation" | "dashboard">("upload");
-    const [parsedClasses, setParsedClasses] = useState<Class[]>([]);
+    const [view, setView] = useState<"upload" | "loading" | "validation" | "onboarding" | "dashboard">("upload");
+    const [parsedClasses, setParsedClasses] = useState<any[]>([]);
+    const [isSaving, setIsSaving] = useState(false);
+    const router = useRouter();
 
-    const handleUploadFinish = () => {
-        setView("loading");
-        // Simulate AI parsing delay
-        setTimeout(() => {
-            setParsedClasses(MOCK_CLASSES);
-            setView("validation");
-        }, 2000);
+    const handleUploadFinish = (classes: any[]) => {
+        setParsedClasses(classes);
+        setView("validation");
+    };
+
+    const handleOnboardingComplete = async (userData: {
+        email: string;
+        name: string;
+        campusLocation: string;
+        homeLocation: string;
+        commuteMethod: CommuteMethod;
+    }) => {
+        setIsSaving(true);
+        try {
+            // 1. Onboard user
+            const user = await onboardUser(userData);
+            
+            // 2. Save classes
+            await saveSchedule(user.id, parsedClasses);
+            
+            // 3. Save email to localStorage for persistence (simple alternative to auth)
+            localStorage.setItem("userEmail", userData.email);
+            
+            setView("dashboard");
+        } catch (error) {
+            console.error("Saving Error:", error);
+            alert("Failed to save your schedule. Please try again.");
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     return (
@@ -68,9 +97,7 @@ export default function Home() {
                         </p>
                     </div>
 
-                    <div onClick={() => handleUploadFinish()}>
-                        <ScheduleUpload />
-                    </div>
+                    <ScheduleUpload onParsed={handleUploadFinish} />
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl pt-12">
                         {[
@@ -117,9 +144,20 @@ export default function Home() {
                     initialClasses={parsedClasses}
                     onConfirm={(updated) => {
                         setParsedClasses(updated);
-                        setView("dashboard");
+                        setView("onboarding");
                     }}
                 />
+            )}
+
+            {view === "onboarding" && (
+                isSaving ? (
+                    <div className="flex flex-col items-center justify-center space-y-4 py-20">
+                        <Loader2 className="w-12 h-12 text-primary animate-spin" />
+                        <p className="text-xl font-medium">Syncing your data with the stars...</p>
+                    </div>
+                ) : (
+                    <OnboardingForm onComplete={handleOnboardingComplete} />
+                )
             )}
 
             {view === "dashboard" && (
@@ -135,6 +173,11 @@ export default function Home() {
                     <div className="flex flex-col items-center gap-4 pt-8">
                         <Link
                             href="/dashboard"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                const email = typeof window !== "undefined" ? localStorage.getItem("userEmail") : null;
+                                router.push(`/dashboard${email ? `?email=${email}` : ""}`);
+                            }}
                             className="px-8 py-4 bg-primary text-white rounded-2xl font-bold shadow-[0_0_30px_rgba(139,92,246,0.5)] hover:scale-105 active:scale-95 transition-all"
                         >
                             Enter Live Dashboard

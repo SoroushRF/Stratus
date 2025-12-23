@@ -3,11 +3,11 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../app/generated/prisma"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 enum CommuteMethod {
@@ -45,7 +45,7 @@ model Class {
   name       String
   startTime  String       // e.g., "14:00"
   endTime    String
-  days       Day[]
+  days       String       // stored as comma-separated values (e.g. "MONDAY,WEDNESDAY")
   location   String       // building/room
   
   userId     String
