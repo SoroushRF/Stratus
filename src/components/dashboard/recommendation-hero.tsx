@@ -2,7 +2,7 @@
 
 import { Recommendation } from "@/types";
 import { motion } from "framer-motion";
-import { Shirt, Footprints, CheckCircle2, CloudSun, Sparkles, Briefcase } from "lucide-react";
+import { Shirt, Footprints, CheckCircle2, Sparkles, Briefcase } from "lucide-react";
 
 interface RecommendationHeroProps {
     recommendation: Recommendation;
@@ -51,7 +51,7 @@ export function RecommendationHero({ recommendation, summary }: RecommendationHe
                         AI-Synthesized Plan
                     </div>
                     <h2 className="text-3xl md:text-4xl font-black leading-tight italic">
-                        "{summary}"
+                        &quot;{summary}&quot;
                     </h2>
                     <p className="text-muted-foreground">{advice}</p>
                 </div>
@@ -89,7 +89,7 @@ export function RecommendationHero({ recommendation, summary }: RecommendationHe
                         <div className="space-y-3">
                             <div className="text-xl font-bold text-white">{clothingPlan.footwear}</div>
                             <div className="flex items-start gap-2 p-3 bg-white/5 rounded-xl border border-white/10 text-xs text-muted-foreground leading-relaxed italic">
-                                "{clothingPlan.rationale}"
+                                &quot;{clothingPlan.rationale}&quot;
                             </div>
                         </div>
                     </div>

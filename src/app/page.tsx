@@ -1,194 +1,334 @@
 "use client";
 
 import { useState } from "react";
-import { ScheduleUpload } from "@/components/upload/schedule-upload";
-import { ValidationForm } from "@/components/upload/validation-form";
-import { SkeletonCards } from "@/components/ui/skeleton-cards";
-import { Sparkles } from "lucide-react";
-import { Class, Day } from "@/types";
-import Link from "next/link";
-import { OnboardingForm } from "@/components/upload/onboarding-form";
-import { onboardUser, saveSchedule } from "@/app/actions";
-import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import { processSchedule, generateAttireRecommendationsAction, generateMasterRecommendationAction } from "@/app/actions";
+import { ParsedClass, University, ClassAttireRecommendation, MasterRecommendation } from "@/types";
+import universitiesData from "@/lib/data/universities.json";
+import { getWeatherForecast } from "@/lib/services/weather";
+import { matchClassesToWeather, filterClassesByDay, ClassWeatherMatch } from "@/lib/utils/weatherMatcher";
+import { resolveAnalysisDay, getDateForAnalysisDay } from "@/lib/utils/dateHelpers";
 
-// Mock Data for demonstration
-const MOCK_CLASSES: Class[] = [
-    {
-        id: "1",
-        name: "Advanced Computer Science",
-        startTime: "09:00 AM",
-        endTime: "10:30 AM",
-        location: "Hall A - Room 302",
-        days: [Day.MONDAY, Day.WEDNESDAY],
-        userId: "user-1",
-        createdAt: new Date(),
-        updatedAt: new Date()
-    },
-    {
-        id: "2",
-        name: "Environmental Science",
-        startTime: "11:00 AM",
-        endTime: "12:30 PM",
-        location: "Green Lab - Bld 4",
-        days: [Day.TUESDAY, Day.THURSDAY],
-        userId: "user-1",
-        createdAt: new Date(),
-        updatedAt: new Date()
-    }
-];
+const universities = universitiesData as University[];
 
 export default function Home() {
-    const [view, setView] = useState<"upload" | "loading" | "validation" | "onboarding" | "dashboard">("upload");
-    const [parsedClasses, setParsedClasses] = useState<any[]>([]);
-    const [isSaving, setIsSaving] = useState(false);
-    const router = useRouter();
+    const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+    const [classes, setClasses] = useState<ParsedClass[]>([]);
+    const [classWeatherMatches, setClassWeatherMatches] = useState<ClassWeatherMatch[]>([]);
+    const [classAttireRecommendations, setClassAttireRecommendations] = useState<ClassAttireRecommendation[]>([]);
+    const [masterRecommendation, setMasterRecommendation] = useState<MasterRecommendation | null>(null);
+    const [selectedUniName, setSelectedUniName] = useState<string>("");
+    const [selectedDay, setSelectedDay] = useState<string>("today");
+    const [error, setError] = useState<string | null>(null);
 
-    const handleUploadFinish = (classes: any[]) => {
-        setParsedClasses(classes);
-        setView("validation");
+    // Generate day options based on current day
+    const getDayOptions = () => {
+        const days = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
+        const today = new Date();
+        const todayIndex = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
+        
+        const options = [];
+        
+        // Add "Today (DayName)"
+        options.push({ value: "today", label: `Today (${days[todayIndex]})` });
+        
+        // Add "Tomorrow (DayName)"
+        const tomorrowIndex = (todayIndex + 1) % 7;
+        options.push({ value: "tomorrow", label: `Tomorrow (${days[tomorrowIndex]})` });
+        
+        // Add next 5 days
+        for (let i = 2; i < 7; i++) {
+            const dayIndex = (todayIndex + i) % 7;
+            const dayName = days[dayIndex];
+            options.push({ value: dayName, label: dayName });
+        }
+        
+        return options;
     };
 
-    const handleOnboardingComplete = async (userData: {
-        email: string;
-        name: string;
-        campusLocation: string;
-    }) => {
-        setIsSaving(true);
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setStatus("loading");
+        setError(null);
+
         try {
-            // 1. Onboard user
-            const user = await onboardUser(userData);
-            
-            // 2. Save classes
-            await saveSchedule(user.id, parsedClasses);
-            
-            // 3. Save email to localStorage for persistence (simple alternative to auth)
-            localStorage.setItem("userEmail", userData.email);
-            
-            setView("dashboard");
-        } catch (error) {
-            console.error("Saving Error:", error);
-            alert("Failed to save your schedule. Please try again.");
-        } finally {
-            setIsSaving(false);
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = async () => {
+                const base64Data = (reader.result as string).split(",")[1];
+                const response = await processSchedule(base64Data, file.type);
+
+                if (response.success && response.data) {
+                    const parsedClasses = response.data;
+                    setClasses(parsedClasses);
+
+                    // Get selected university
+                    const university = universities.find(u => u.name === selectedUniName);
+                    if (!university) {
+                        setStatus("error");
+                        setError("Selected university not found.");
+                        return;
+                    }
+
+                    // Resolve the analysis day and date
+                    const actualDay = resolveAnalysisDay(selectedDay);
+                    const analysisDate = getDateForAnalysisDay(selectedDay);
+
+                    // Filter classes for the selected day
+                    const dayClasses = filterClassesByDay(parsedClasses, actualDay);
+
+                    if (dayClasses.length === 0) {
+                        setStatus("error");
+                        setError(`No classes found for ${getDayOptions().find(opt => opt.value === selectedDay)?.label || selectedDay}.`);
+                        return;
+                    }
+
+                    // Fetch weather for the selected campus and date
+                    const weatherData = await getWeatherForecast(
+                        university.lat,
+                        university.lng,
+                        analysisDate
+                    );
+
+                    // Match classes to weather
+                    const matches = matchClassesToWeather(dayClasses, weatherData);
+                    setClassWeatherMatches(matches);
+
+                    // Generate attire recommendations for all classes (server-side)
+                    const attireResponse = await generateAttireRecommendationsAction(matches);
+                    if (attireResponse.success && attireResponse.data) {
+                        setClassAttireRecommendations(attireResponse.data);
+                        
+                        // Generate master recommendation
+                        const masterResponse = await generateMasterRecommendationAction(attireResponse.data);
+                        if (masterResponse.success && masterResponse.data) {
+                            setMasterRecommendation(masterResponse.data);
+                        } else {
+                            console.error("Failed to generate master recommendation:", masterResponse.error);
+                        }
+                    } else {
+                        console.error("Failed to generate recommendations:", attireResponse.error);
+                        // Keep weather matches visible even if attire fails
+                    }
+
+                    setStatus("success");
+                } else {
+                    setStatus("error");
+                    setError(response.error || "Failed to parse schedule.");
+                }
+            };
+        } catch (err) {
+            setStatus("error");
+            setError("Error reading file.");
         }
     };
 
     return (
-        <div className="container mx-auto px-4 pt-20 pb-32">
-            {view === "upload" && (
-                <div className="flex flex-col items-center text-center space-y-12 animate-in fade-in duration-700">
-                    <div className="space-y-6 max-w-3xl">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full glass-border bg-white/5 backdrop-blur-md text-primary text-xs font-semibold tracking-wider uppercase">
-                            <Sparkles className="w-3 h-3" />
-                            AI-Powered Attire Sync
-                        </div>
-                        <h1 className="text-5xl md:text-7xl font-black tracking-tight leading-tight">
-                            Elevate Your Daily <br />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-purple-400 to-blue-400 text-glow">
-                                Campus Experience
-                            </span>
-                        </h1>
-                        <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-                            Stratus parses your student schedule and cross-references it with real-time weather
-                            to recommend the perfect outfit and essential tools for your day.
-                        </p>
+        <div style={{ padding: "40px", fontFamily: "sans-serif", maxWidth: "800px", margin: "0 auto", backgroundColor: "#fff", color: "#000", minHeight: "100vh" }}>
+            <h1 style={{ borderBottom: "2px solid #000", paddingBottom: "10px" }}>Parser Test Dashboard</h1>
+            
+            {status !== "success" && (
+                <div style={{ marginTop: "20px" }}>
+                    <div style={{ marginBottom: "30px" }}>
+                        <h3>1. Select Your Campus</h3>
+                        <input 
+                            list="universities" 
+                            placeholder="Type to search campus..." 
+                            value={selectedUniName}
+                            onChange={(e) => setSelectedUniName(e.target.value)}
+                            style={{ padding: "10px", border: "1px solid #ccc", width: "100%", outline: "none" }}
+                        />
+                        <datalist id="universities">
+                            {universities.map((uni, idx) => (
+                                <option key={idx} value={uni.name} />
+                            ))}
+                        </datalist>
                     </div>
 
-                    <ScheduleUpload onParsed={handleUploadFinish} />
+                    <div style={{ marginBottom: "30px" }}>
+                        <h3>1.5. Select Analysis Day</h3>
+                        <select 
+                            value={selectedDay}
+                            onChange={(e) => setSelectedDay(e.target.value)}
+                            style={{ padding: "10px", border: "1px solid #ccc", width: "100%", outline: "none" }}
+                        >
+                            {getDayOptions().map((option, idx) => (
+                                <option key={idx} value={option.value}>{option.label}</option>
+                            ))}
+                        </select>
+                    </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl pt-12">
-                        {[
-                            {
-                                title: "Smart Clothing",
-                                desc: "From breathable linen to heavy parkas, we know what fits the hourly forecast.",
-                                icon: "👕"
-                            },
-                            {
-                                title: "Adaptive Planning",
-                                desc: "Weather changes fast. We sync with the latest forecast for your specific class times.",
-                                icon: "☁️"
-                            },
-                            {
-                                title: "Gear Up",
-                                desc: "Never forget an umbrella or a power bank again. We've got your back.",
-                                icon: "🎒"
-                            }
-                        ].map((feature, i) => (
-                            <div key={i} className="p-6 rounded-3xl glass transition-all hover:translate-y-[-4px] group">
-                                <div className="text-3xl mb-4 group-hover:scale-120 transition-transform duration-300 inline-block">
-                                    {feature.icon}
-                                </div>
-                                <h3 className="text-lg font-bold mb-2">{feature.title}</h3>
-                                <p className="text-sm text-muted-foreground">{feature.desc}</p>
+                    <div style={{ marginBottom: "30px" }}>
+                        <h3>2. Upload Schedule (PDF/Image)</h3>
+                        <input 
+                            type="file" 
+                            onChange={handleFileChange} 
+                            disabled={status === "loading" || !selectedUniName}
+                            style={{ padding: "10px", border: "1px solid #ccc", width: "100%" }}
+                        />
+                        {!selectedUniName && <p style={{ fontSize: "12px", color: "#666" }}>* Select a campus first</p>}
+                        {status === "loading" && <p><strong>Status: Processing with Gemini...</strong></p>}
+                        {status === "error" && (
+                            <div style={{ color: "red", padding: "10px", border: "1px solid red", marginTop: "10px" }}>
+                                Error: {error}
                             </div>
-                        ))}
+                        )}
                     </div>
                 </div>
             )}
 
-            {view === "loading" && (
-                <div className="space-y-8">
-                    <div className="text-center space-y-4 max-w-xl mx-auto mb-12">
-                        <h2 className="text-3xl font-bold animate-pulse text-primary">Gemini is parsing...</h2>
-                        <p className="text-muted-foreground">Extracting classes, times, and locations from your schedule.</p>
+            {status === "success" && (
+                <div style={{ marginTop: "30px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <div>
+                            <h2>Results</h2>
+                            <p style={{ margin: 0, color: "#666" }}>Campus: {selectedUniName}</p>
+                            <p style={{ margin: 0, color: "#666" }}>
+                                Analysis Day: {getDayOptions().find(opt => opt.value === selectedDay)?.label || selectedDay}
+                            </p>
+                        </div>
+                        <button onClick={() => setStatus("idle")} style={{ padding: "5px 15px", cursor: "pointer" }}>Upload New</button>
                     </div>
-                    <SkeletonCards />
+
+                    <div style={{ marginTop: "20px" }}>
+                        {classAttireRecommendations.length === 0 ? (
+                            <p>No classes found for the selected day.</p>
+                        ) : (
+                            <div>
+                                {/* Master Recommendation - Hero Element */}
+                                {masterRecommendation && (
+                                    <div style={{
+                                        marginBottom: "30px",
+                                        padding: "25px",
+                                        background: "white",
+                                        color: "black",
+                                        border: "2px solid #000",
+                                        borderRadius: "8px"
+                                    }}>
+                                        <h3 style={{ margin: "0 0 15px 0", fontSize: "24px" }}>
+                                            🎯 Master Outfit for the Day
+                                        </h3>
+                                        
+                                        <div style={{ marginBottom: "15px" }}>
+                                            <p style={{ margin: "0 0 5px 0", fontSize: "12px", opacity: 0.7 }}>
+                                                TEMPERATURE RANGE
+                                            </p>
+                                            <p style={{ margin: "0", fontSize: "18px", fontWeight: "bold" }}>
+                                                {masterRecommendation.weatherRange.minTemp}°C → {masterRecommendation.weatherRange.maxTemp}°C
+                                            </p>
+                                            <p style={{ margin: "5px 0 0 0", fontSize: "14px", opacity: 0.7 }}>
+                                                Conditions: {masterRecommendation.weatherRange.conditions.join(", ")}
+                                            </p>
+                                        </div>
+
+                                        <div style={{ marginBottom: "15px" }}>
+                                            <p style={{ margin: "0 0 5px 0", fontSize: "12px", opacity: 0.7 }}>
+                                                BASE OUTFIT
+                                            </p>
+                                            <p style={{ margin: "0", fontSize: "16px" }}>
+                                                {masterRecommendation.baseOutfit}
+                                            </p>
+                                        </div>
+
+                                        <div style={{ marginBottom: "15px" }}>
+                                            <p style={{ margin: "0 0 5px 0", fontSize: "12px", opacity: 0.7 }}>
+                                                LAYERING STRATEGY
+                                            </p>
+                                            <p style={{ margin: "0", fontSize: "16px" }}>
+                                                {masterRecommendation.layeringStrategy}
+                                            </p>
+                                        </div>
+
+                                        {masterRecommendation.essentialAccessories.length > 0 && (
+                                            <div style={{ marginBottom: "15px" }}>
+                                                <p style={{ margin: "0 0 5px 0", fontSize: "12px", opacity: 0.7 }}>
+                                                    ESSENTIAL ACCESSORIES
+                                                </p>
+                                                <p style={{ margin: "0", fontSize: "16px" }}>
+                                                    {masterRecommendation.essentialAccessories.join(" • ")}
+                                                </p>
+                                            </div>
+                                        )}
+
+                                        <div style={{ 
+                                            marginTop: "15px", 
+                                            paddingTop: "15px", 
+                                            borderTop: "1px solid #ddd"
+                                        }}>
+                                            <p style={{ margin: "0", fontSize: "14px", fontStyle: "italic", opacity: 0.7 }}>
+                                                💡 {masterRecommendation.reasoning}
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <h3 style={{ marginBottom: "15px" }}>Classes, Weather & Attire Recommendations</h3>
+                                {classAttireRecommendations.map((rec, idx) => (
+                                    <div 
+                                        key={idx} 
+                                        style={{ 
+                                            marginBottom: "20px", 
+                                            padding: "15px", 
+                                            backgroundColor: "#f9f9f9", 
+                                            border: "1px solid #ddd",
+                                            borderLeft: rec.attire.priority === "essential" ? "4px solid #d32f2f" : "4px solid #000"
+                                        }}
+                                    >
+                                        <h4 style={{ margin: "0 0 10px 0" }}>{rec.class.name}</h4>
+                                        
+                                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", fontSize: "14px", marginBottom: "15px" }}>
+                                            <div>
+                                                <p style={{ margin: "5px 0" }}><strong>Time:</strong> {rec.class.startTime} - {rec.class.endTime}</p>
+                                                <p style={{ margin: "5px 0" }}><strong>Location:</strong> {rec.class.location || "N/A"}</p>
+                                            </div>
+                                            
+                                            {rec.weather ? (
+                                                <div style={{ borderLeft: "2px solid #ccc", paddingLeft: "10px" }}>
+                                                    <p style={{ margin: "5px 0" }}><strong>Weather:</strong> {rec.weather.condition}</p>
+                                                    <p style={{ margin: "5px 0" }}><strong>Temp:</strong> {rec.weather.temp}°C (Feels like {rec.weather.feelsLike}°C)</p>
+                                                    <p style={{ margin: "5px 0" }}><strong>Wind:</strong> {rec.weather.windSpeed} km/h</p>
+                                                </div>
+                                            ) : (
+                                                <div style={{ borderLeft: "2px solid #ccc", paddingLeft: "10px" }}>
+                                                    <p style={{ margin: "5px 0", color: "#999" }}>Weather data unavailable</p>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Attire Recommendation Section */}
+                                        <div style={{ 
+                                            padding: "12px", 
+                                            backgroundColor: rec.attire.priority === "essential" ? "#ffebee" : "#e8f5e9",
+                                            borderRadius: "4px",
+                                            borderLeft: rec.attire.priority === "essential" ? "3px solid #d32f2f" : "3px solid #4caf50"
+                                        }}>
+                                            <p style={{ margin: "0 0 8px 0", fontWeight: "bold", fontSize: "15px" }}>
+                                                👔 Recommended Attire
+                                                {rec.attire.priority === "essential" && <span style={{ color: "#d32f2f", marginLeft: "8px" }}>(Essential)</span>}
+                                            </p>
+                                            <p style={{ margin: "5px 0" }}>{rec.attire.recommendation}</p>
+                                            <p style={{ margin: "5px 0", fontSize: "13px", fontStyle: "italic", color: "#666" }}>
+                                                {rec.attire.reasoning}
+                                            </p>
+                                            {rec.attire.accessories.length > 0 && (
+                                                <p style={{ margin: "8px 0 0 0", fontSize: "13px" }}>
+                                                    <strong>Bring:</strong> {rec.attire.accessories.join(", ")}
+                                                </p>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </div>
             )}
 
-            {view === "validation" && (
-                <ValidationForm
-                    initialClasses={parsedClasses}
-                    onConfirm={(updated) => {
-                        setParsedClasses(updated);
-                        setView("onboarding");
-                    }}
-                />
-            )}
-
-            {view === "onboarding" && (
-                isSaving ? (
-                    <div className="flex flex-col items-center justify-center space-y-4 py-20">
-                        <Loader2 className="w-12 h-12 text-primary animate-spin" />
-                        <p className="text-xl font-medium">Syncing your data with the stars...</p>
-                    </div>
-                ) : (
-                    <OnboardingForm onComplete={handleOnboardingComplete} />
-                )
-            )}
-
-            {view === "dashboard" && (
-                <div className="text-center space-y-8 py-20 animate-in fade-in zoom-in duration-1000">
-                    <div className="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto text-emerald-400 mb-6 border border-emerald-500/30">
-                        <Sparkles className="w-10 h-10" />
-                    </div>
-                    <h2 className="text-4xl font-black">Schedule Configured!</h2>
-                    <p className="text-xl text-muted-foreground max-w-xl mx-auto">
-                        Your personalized dashboard is ready. <br />
-                        We've synced your classes with real-time weather forecasts.
-                    </p>
-                    <div className="flex flex-col items-center gap-4 pt-8">
-                        <Link
-                            href="/dashboard"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                const email = typeof window !== "undefined" ? localStorage.getItem("userEmail") : null;
-                                router.push(`/dashboard${email ? `?email=${email}` : ""}`);
-                            }}
-                            className="px-8 py-4 bg-primary text-white rounded-2xl font-bold shadow-[0_0_30px_rgba(139,92,246,0.5)] hover:scale-105 active:scale-95 transition-all"
-                        >
-                            Enter Live Dashboard
-                        </Link>
-                        <button
-                            onClick={() => setView("upload")}
-                            className="text-sm text-muted-foreground hover:text-primary transition-colors"
-                        >
-                            Start Over
-                        </button>
-                    </div>
-                </div>
-            )}
+            <footer style={{ marginTop: "50px", fontSize: "12px", borderTop: "1px solid #ccc", paddingTop: "20px" }}>
+                Dev Mode: Engine Locked to Gemini 2.5 Flash Lite
+            </footer>
         </div>
     );
 }
+

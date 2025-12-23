@@ -1,121 +1,100 @@
 [
   {
-    "name": "University of Toronto",
-    "city": "Toronto",
-    "province": "ON",
-    "lat": 43.6629,
-    "lng": -79.3957
-  },
-  {
-    "name": "University of British Columbia",
-    "city": "Vancouver",
-    "province": "BC",
+    "name": "University of British Columbia (Vancouver)",
+    "shortName": "UBC",
+    "campus": "Vancouver",
     "lat": 49.2606,
     "lng": -123.246
   },
   {
-    "name": "McGill University",
-    "city": "Montreal",
-    "province": "QC",
-    "lat": 45.5048,
-    "lng": -73.5772
+    "name": "University of British Columbia (Okanagan)",
+    "shortName": "UBC",
+    "campus": "Okanagan",
+    "lat": 49.9395,
+    "lng": -119.3948
   },
   {
-    "name": "University of Waterloo",
-    "city": "Waterloo",
-    "province": "ON",
-    "lat": 43.4723,
-    "lng": -80.5449
+    "name": "University of Toronto (St. George)",
+    "shortName": "UofT",
+    "campus": "St. George",
+    "lat": 43.6629,
+    "lng": -79.3957
   },
   {
-    "name": "University of Alberta",
-    "city": "Edmonton",
-    "province": "AB",
-    "lat": 53.5232,
-    "lng": -113.5263
+    "name": "University of Toronto (Mississauga)",
+    "shortName": "UofT",
+    "campus": "UTM",
+    "lat": 43.5482,
+    "lng": -79.6635
   },
   {
-    "name": "York University",
-    "city": "Toronto",
-    "province": "ON",
+    "name": "University of Toronto (Scarborough)",
+    "shortName": "UofT",
+    "campus": "UTSC",
+    "lat": 43.7841,
+    "lng": -79.1868
+  },
+  {
+    "name": "York University (Keele)",
+    "shortName": "York",
+    "campus": "Keele",
     "lat": 43.7735,
     "lng": -79.5019
   },
   {
-    "name": "Western University",
-    "city": "London",
-    "province": "ON",
-    "lat": 42.9993,
-    "lng": -81.2721
+    "name": "York University (Glendon)",
+    "shortName": "York",
+    "campus": "Glendon",
+    "lat": 43.7279,
+    "lng": -79.377
   },
   {
-    "name": "McMaster University",
-    "city": "Hamilton",
-    "province": "ON",
-    "lat": 43.2609,
-    "lng": -79.9192
+    "name": "York University (Markham)",
+    "shortName": "York",
+    "campus": "Markham",
+    "lat": 43.8561,
+    "lng": -79.34
   },
   {
-    "name": "University of Calgary",
-    "city": "Calgary",
-    "province": "AB",
-    "lat": 51.0776,
-    "lng": -114.1278
+    "name": "McGill University (Downtown)",
+    "shortName": "McGill",
+    "campus": "Downtown",
+    "lat": 45.5048,
+    "lng": -73.5772
   },
   {
-    "name": "University of Ottawa",
-    "city": "Ottawa",
-    "province": "ON",
-    "lat": 45.4231,
-    "lng": -75.6831
+    "name": "McGill University (Macdonald)",
+    "shortName": "McGill",
+    "campus": "Macdonald",
+    "lat": 45.4056,
+    "lng": -73.9421
   },
   {
-    "name": "Concordia University",
-    "city": "Montreal",
-    "province": "QC",
-    "lat": 45.4971,
-    "lng": -73.5791
+    "name": "University of Waterloo (Main)",
+    "shortName": "Waterloo",
+    "campus": "Main",
+    "lat": 43.4723,
+    "lng": -80.5449
   },
   {
-    "name": "Simon Fraser University",
-    "city": "Burnaby",
-    "province": "BC",
-    "lat": 49.2781,
-    "lng": -122.9199
+    "name": "University of Waterloo (Kitchener)",
+    "shortName": "Waterloo",
+    "campus": "Health Sciences",
+    "lat": 43.4475,
+    "lng": -80.485
   },
   {
-    "name": "Queen's University",
-    "city": "Kingston",
-    "province": "ON",
-    "lat": 44.2253,
-    "lng": -76.4951
+    "name": "University of Waterloo (Cambridge)",
+    "shortName": "Waterloo",
+    "campus": "Architecture",
+    "lat": 43.356,
+    "lng": -80.316
   },
   {
-    "name": "Dalhousie University",
-    "city": "Halifax",
-    "province": "NS",
-    "lat": 44.6366,
-    "lng": -63.5917
-  },
-  {
-    "name": "University of Manitoba",
-    "city": "Winnipeg",
-    "province": "MB",
-    "lat": 49.8075,
-    "lng": -97.1366
-  },
-  {
-    "name": "University of Saskatchewan",
-    "city": "Saskatoon",
-    "province": "SK",
-    "lat": 52.1332,
-    "lng": -106.6314
-  },
-  {
-    "name": "University of Victoria",
-    "city": "Victoria",
-    "province": "BC",
-    "lat": 48.4634,
-    "lng": -123.3117
+    "name": "University of Waterloo (Stratford)",
+    "shortName": "Waterloo",
+    "campus": "Interaction Design",
+    "lat": 43.3725,
+    "lng": -80.9768
   }
 ]
