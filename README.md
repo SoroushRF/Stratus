@@ -58,7 +58,7 @@ Instead of just checking the weather, Stratus tells you exactly *what to wear* b
 
 **Backend & AI**
 *   **Runtime**: Node.js (Serverless on Vercel)
-*   **AI Model**: Google Gemini 2.0 Flash Lite
+*   **AI Model**: Google Gemini 2.5 Flash Lite
 *   **Weather Provider**: OpenWeatherMap OneCall 3.0 (Planned/Hybrid)
 *   **Database**: SQLite (via Prisma) for future user preferences
 
