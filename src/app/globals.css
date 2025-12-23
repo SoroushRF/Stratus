@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 :root {
+<<<<<<< Updated upstream
     --background: 240 10% 4%;
     --foreground: 0 0% 98%;
     --card: 240 10% 4%;
@@ -25,6 +26,36 @@
     /* Custom Glows */
     --glow-primary: 263.4 70% 50.4% / 0.15;
     --glow-secondary: 240 3.7% 15.9% / 0.15;
+=======
+    --background: 215 28% 17%;
+    /* Lighter Atmospheric Blue */
+    --foreground: 210 40% 98%;
+    --card: 215 28% 17%;
+    --card-foreground: 210 40% 98%;
+    --popover: 215 28% 17%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 199 89% 48%;
+    /* Sky Blue */
+    --primary-foreground: 215 28% 17%;
+    --secondary: 217 33% 22%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217 33% 22%;
+    --muted-foreground: 215 20% 70%;
+    --accent: 217 33% 22%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217 33% 22%;
+    --input: 217 33% 22%;
+    --ring: 199 89% 48%;
+    --radius: 1rem;
+
+    /* Custom Glows */
+    --glow-primary: 199 89% 48% / 0.25;
+    --glow-secondary: 217 33% 22% / 0.15;
+    --glow-sunny: 45 93% 58% / 0.2;
+    /* Warm Golden Glow */
+>>>>>>> Stashed changes
 }
 
 @theme inline {
@@ -52,6 +83,36 @@
     --radius-lg: calc(var(--radius) - 2px);
     --radius-md: calc(var(--radius) - 4px);
     --radius-sm: calc(var(--radius) - 8px);
+<<<<<<< Updated upstream
+=======
+
+    --animate-pulse-slow: pulse-slow 8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    --animate-float: float 6s ease-in-out infinite;
+
+    @keyframes pulse-slow {
+
+        0%,
+        100% {
+            opacity: 0.1;
+        }
+
+        50% {
+            opacity: 0.3;
+        }
+    }
+
+    @keyframes float {
+
+        0%,
+        100% {
+            transform: translateY(0);
+        }
+
+        50% {
+            transform: translateY(-10px);
+        }
+    }
+>>>>>>> Stashed changes
 }
 
 @layer base {
@@ -62,11 +123,16 @@
     body {
         @apply bg-background text-foreground antialiased;
         font-feature-settings: "rlig" 1, "calt" 1;
+<<<<<<< Updated upstream
+=======
+        background-attachment: fixed;
+>>>>>>> Stashed changes
     }
 }
 
 @layer utilities {
     .glass {
+<<<<<<< Updated upstream
         @apply bg-white/5 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_0_rgba(0, 0, 0, 0.37)];
     }
 
@@ -76,16 +142,64 @@
 
     .glass-border {
         @apply border border-white/10;
+=======
+        @apply bg-white/5 backdrop-blur-xl border border-white/10;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    }
+
+    .glass-dark {
+        @apply bg-black/40 backdrop-blur-2xl border border-white/5 shadow-2xl;
+    }
+
+    .glass-morphism {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+>>>>>>> Stashed changes
     }
 
     .text-glow {
         text-shadow: 0 0 20px hsl(var(--primary) / 0.5);
     }
 
+<<<<<<< Updated upstream
     .bg-grid {
         background-size: 40px 40px;
         background-image:
             linear-gradient(to right, hsl(var(--border) / 0.2) 1px, transparent 1px),
             linear-gradient(to bottom, hsl(var(--border) / 0.2) 1px, transparent 1px);
+=======
+    .text-glow-blue {
+        text-shadow: 0 0 15px rgba(0, 183, 255, 0.6);
+    }
+
+    .bg-grid-white {
+        background-size: 40px 40px;
+        background-image: linear-gradient(to right,
+                rgba(255, 255, 255, 0.03) 1px,
+                transparent 1px),
+            linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    }
+
+    .animate-gradient {
+        background-size: 200% 200%;
+        animation: gradient-move 15s ease infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            background-position: 0% 50%;
+        }
+
+        50% {
+            background-position: 100% 50%;
+        }
+
+        100% {
+            background-position: 0% 50%;
+        }
+>>>>>>> Stashed changes
     }
 }
