@@ -1,7 +1,10 @@
 export enum CommuteMethod {
-    WALKING = "WALKING",
-    DRIVING = "DRIVING",
-    BIKING = "BIKING",
+
+  WALKING = "WALKING",
+  DRIVING = "DRIVING",
+  BIKING = "BIKING",
+  TRANSIT = "TRANSIT",
+
 }
 
 export enum Day {
@@ -15,13 +18,15 @@ export enum Day {
 }
 
 export interface User {
-    id: string;
-    email: string;
-    name?: string | null;
-    campusLocation: string;
-    commuteMethod: CommuteMethod;
-    createdAt: Date;
-    updatedAt: Date;
+
+  id: string;
+  email: string;
+  name?: string | null;
+  campusLocation: string;
+  homeLocation?: string | null;
+  commuteMethod: CommuteMethod;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface Class {
