@@ -1,32 +1,6 @@
 @import "tailwindcss";
 
 :root {
-<<<<<<< Updated upstream
-    --background: 240 10% 4%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 4%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 4%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 263.4 70% 50.4%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 263.4 70% 50.4%;
-    --radius: 0.75rem;
-
-    /* Custom Glows */
-    --glow-primary: 263.4 70% 50.4% / 0.15;
-    --glow-secondary: 240 3.7% 15.9% / 0.15;
-=======
     --background: 215 28% 17%;
     /* Lighter Atmospheric Blue */
     --foreground: 210 40% 98%;
@@ -55,7 +29,6 @@
     --glow-secondary: 217 33% 22% / 0.15;
     --glow-sunny: 45 93% 58% / 0.2;
     /* Warm Golden Glow */
->>>>>>> Stashed changes
 }
 
 @theme inline {
@@ -83,8 +56,6 @@
     --radius-lg: calc(var(--radius) - 2px);
     --radius-md: calc(var(--radius) - 4px);
     --radius-sm: calc(var(--radius) - 8px);
-<<<<<<< Updated upstream
-=======
 
     --animate-pulse-slow: pulse-slow 8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
     --animate-float: float 6s ease-in-out infinite;
@@ -112,7 +83,6 @@
             transform: translateY(-10px);
         }
     }
->>>>>>> Stashed changes
 }
 
 @layer base {
@@ -123,26 +93,12 @@
     body {
         @apply bg-background text-foreground antialiased;
         font-feature-settings: "rlig" 1, "calt" 1;
-<<<<<<< Updated upstream
-=======
         background-attachment: fixed;
->>>>>>> Stashed changes
     }
 }
 
 @layer utilities {
     .glass {
-<<<<<<< Updated upstream
-        @apply bg-white/5 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_0_rgba(0, 0, 0, 0.37)];
-    }
-
-    .glass-dark {
-        @apply bg-black/20 backdrop-blur-2xl border border-white/5 shadow-2xl;
-    }
-
-    .glass-border {
-        @apply border border-white/10;
-=======
         @apply bg-white/5 backdrop-blur-xl border border-white/10;
         box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
     }
@@ -157,20 +113,12 @@
         -webkit-backdrop-filter: blur(12px);
         border: 1px solid rgba(255, 255, 255, 0.1);
         box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
->>>>>>> Stashed changes
     }
 
     .text-glow {
         text-shadow: 0 0 20px hsl(var(--primary) / 0.5);
     }
 
-<<<<<<< Updated upstream
-    .bg-grid {
-        background-size: 40px 40px;
-        background-image:
-            linear-gradient(to right, hsl(var(--border) / 0.2) 1px, transparent 1px),
-            linear-gradient(to bottom, hsl(var(--border) / 0.2) 1px, transparent 1px);
-=======
     .text-glow-blue {
         text-shadow: 0 0 15px rgba(0, 183, 255, 0.6);
     }
@@ -200,6 +148,5 @@
         100% {
             background-position: 0% 50%;
         }
->>>>>>> Stashed changes
     }
 }
