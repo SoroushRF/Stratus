@@ -45,3 +45,21 @@ export interface AttireRecommendation {
   accessories: string[]; // Useful items to bring
   priority: "essential" | "suggested"; // How critical this recommendation is
 }
+
+export interface ClassAttireRecommendation {
+  class: ParsedClass;
+  weather: HourlyForecast | null;
+  attire: AttireRecommendation;
+}
+
+export interface MasterRecommendation {
+  baseOutfit: string; // Core outfit description
+  layeringStrategy: string; // How to adjust throughout the day
+  essentialAccessories: string[]; // Must-have items
+  reasoning: string; // Why this outfit works
+  weatherRange: {
+    minTemp: number;
+    maxTemp: number;
+    conditions: string[]; // Unique weather conditions
+  };
+}

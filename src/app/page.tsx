@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { processSchedule } from "@/app/actions";
-import { ParsedClass, University } from "@/types";
+import { processSchedule, generateAttireRecommendationsAction, generateMasterRecommendationAction } from "@/app/actions";
+import { ParsedClass, University, ClassAttireRecommendation, MasterRecommendation } from "@/types";
 import universitiesData from "@/lib/data/universities.json";
 import { getWeatherForecast } from "@/lib/services/weather";
 import { matchClassesToWeather, filterClassesByDay, ClassWeatherMatch } from "@/lib/utils/weatherMatcher";
@@ -14,6 +14,8 @@ export default function Home() {
     const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
     const [classes, setClasses] = useState<ParsedClass[]>([]);
     const [classWeatherMatches, setClassWeatherMatches] = useState<ClassWeatherMatch[]>([]);
+    const [classAttireRecommendations, setClassAttireRecommendations] = useState<ClassAttireRecommendation[]>([]);
+    const [masterRecommendation, setMasterRecommendation] = useState<MasterRecommendation | null>(null);
     const [selectedUniName, setSelectedUniName] = useState<string>("");
     const [selectedDay, setSelectedDay] = useState<string>("today");
     const [error, setError] = useState<string | null>(null);
@@ -92,6 +94,23 @@ export default function Home() {
                     // Match classes to weather
                     const matches = matchClassesToWeather(dayClasses, weatherData);
                     setClassWeatherMatches(matches);
+
+                    // Generate attire recommendations for all classes (server-side)
+                    const attireResponse = await generateAttireRecommendationsAction(matches);
+                    if (attireResponse.success && attireResponse.data) {
+                        setClassAttireRecommendations(attireResponse.data);
+                        
+                        // Generate master recommendation
+                        const masterResponse = await generateMasterRecommendationAction(attireResponse.data);
+                        if (masterResponse.success && masterResponse.data) {
+                            setMasterRecommendation(masterResponse.data);
+                        } else {
+                            console.error("Failed to generate master recommendation:", masterResponse.error);
+                        }
+                    } else {
+                        console.error("Failed to generate recommendations:", attireResponse.error);
+                        // Keep weather matches visible even if attire fails
+                    }
 
                     setStatus("success");
                 } else {
@@ -173,40 +192,129 @@ export default function Home() {
                     </div>
 
                     <div style={{ marginTop: "20px" }}>
-                        {classWeatherMatches.length === 0 ? (
+                        {classAttireRecommendations.length === 0 ? (
                             <p>No classes found for the selected day.</p>
                         ) : (
                             <div>
-                                <h3 style={{ marginBottom: "15px" }}>Classes & Weather Conditions</h3>
-                                {classWeatherMatches.map((match, idx) => (
+                                {/* Master Recommendation - Hero Element */}
+                                {masterRecommendation && (
+                                    <div style={{
+                                        marginBottom: "30px",
+                                        padding: "25px",
+                                        background: "white",
+                                        color: "black",
+                                        border: "2px solid #000",
+                                        borderRadius: "8px"
+                                    }}>
+                                        <h3 style={{ margin: "0 0 15px 0", fontSize: "24px" }}>
+                                            🎯 Master Outfit for the Day
+                                        </h3>
+                                        
+                                        <div style={{ marginBottom: "15px" }}>
+                                            <p style={{ margin: "0 0 5px 0", fontSize: "12px", opacity: 0.7 }}>
+                                                TEMPERATURE RANGE
+                                            </p>
+                                            <p style={{ margin: "0", fontSize: "18px", fontWeight: "bold" }}>
+                                                {masterRecommendation.weatherRange.minTemp}°C → {masterRecommendation.weatherRange.maxTemp}°C
+                                            </p>
+                                            <p style={{ margin: "5px 0 0 0", fontSize: "14px", opacity: 0.7 }}>
+                                                Conditions: {masterRecommendation.weatherRange.conditions.join(", ")}
+                                            </p>
+                                        </div>
+
+                                        <div style={{ marginBottom: "15px" }}>
+                                            <p style={{ margin: "0 0 5px 0", fontSize: "12px", opacity: 0.7 }}>
+                                                BASE OUTFIT
+                                            </p>
+                                            <p style={{ margin: "0", fontSize: "16px" }}>
+                                                {masterRecommendation.baseOutfit}
+                                            </p>
+                                        </div>
+
+                                        <div style={{ marginBottom: "15px" }}>
+                                            <p style={{ margin: "0 0 5px 0", fontSize: "12px", opacity: 0.7 }}>
+                                                LAYERING STRATEGY
+                                            </p>
+                                            <p style={{ margin: "0", fontSize: "16px" }}>
+                                                {masterRecommendation.layeringStrategy}
+                                            </p>
+                                        </div>
+
+                                        {masterRecommendation.essentialAccessories.length > 0 && (
+                                            <div style={{ marginBottom: "15px" }}>
+                                                <p style={{ margin: "0 0 5px 0", fontSize: "12px", opacity: 0.7 }}>
+                                                    ESSENTIAL ACCESSORIES
+                                                </p>
+                                                <p style={{ margin: "0", fontSize: "16px" }}>
+                                                    {masterRecommendation.essentialAccessories.join(" • ")}
+                                                </p>
+                                            </div>
+                                        )}
+
+                                        <div style={{ 
+                                            marginTop: "15px", 
+                                            paddingTop: "15px", 
+                                            borderTop: "1px solid #ddd"
+                                        }}>
+                                            <p style={{ margin: "0", fontSize: "14px", fontStyle: "italic", opacity: 0.7 }}>
+                                                💡 {masterRecommendation.reasoning}
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <h3 style={{ marginBottom: "15px" }}>Classes, Weather & Attire Recommendations</h3>
+                                {classAttireRecommendations.map((rec, idx) => (
                                     <div 
                                         key={idx} 
                                         style={{ 
-                                            marginBottom: "15px", 
+                                            marginBottom: "20px", 
                                             padding: "15px", 
                                             backgroundColor: "#f9f9f9", 
                                             border: "1px solid #ddd",
-                                            borderLeft: "4px solid #000" 
+                                            borderLeft: rec.attire.priority === "essential" ? "4px solid #d32f2f" : "4px solid #000"
                                         }}
                                     >
-                                        <h4 style={{ margin: "0 0 10px 0" }}>{match.class.name}</h4>
+                                        <h4 style={{ margin: "0 0 10px 0" }}>{rec.class.name}</h4>
                                         
-                                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", fontSize: "14px" }}>
+                                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", fontSize: "14px", marginBottom: "15px" }}>
                                             <div>
-                                                <p style={{ margin: "5px 0" }}><strong>Time:</strong> {match.class.startTime} - {match.class.endTime}</p>
-                                                <p style={{ margin: "5px 0" }}><strong>Location:</strong> {match.class.location || "N/A"}</p>
+                                                <p style={{ margin: "5px 0" }}><strong>Time:</strong> {rec.class.startTime} - {rec.class.endTime}</p>
+                                                <p style={{ margin: "5px 0" }}><strong>Location:</strong> {rec.class.location || "N/A"}</p>
                                             </div>
                                             
-                                            {match.weather ? (
+                                            {rec.weather ? (
                                                 <div style={{ borderLeft: "2px solid #ccc", paddingLeft: "10px" }}>
-                                                    <p style={{ margin: "5px 0" }}><strong>Weather:</strong> {match.weather.condition}</p>
-                                                    <p style={{ margin: "5px 0" }}><strong>Temp:</strong> {match.weather.temp}°C (Feels like {match.weather.feelsLike}°C)</p>
-                                                    <p style={{ margin: "5px 0" }}><strong>Wind:</strong> {match.weather.windSpeed} km/h</p>
+                                                    <p style={{ margin: "5px 0" }}><strong>Weather:</strong> {rec.weather.condition}</p>
+                                                    <p style={{ margin: "5px 0" }}><strong>Temp:</strong> {rec.weather.temp}°C (Feels like {rec.weather.feelsLike}°C)</p>
+                                                    <p style={{ margin: "5px 0" }}><strong>Wind:</strong> {rec.weather.windSpeed} km/h</p>
                                                 </div>
                                             ) : (
                                                 <div style={{ borderLeft: "2px solid #ccc", paddingLeft: "10px" }}>
                                                     <p style={{ margin: "5px 0", color: "#999" }}>Weather data unavailable</p>
                                                 </div>
+                                            )}
+                                        </div>
+
+                                        {/* Attire Recommendation Section */}
+                                        <div style={{ 
+                                            padding: "12px", 
+                                            backgroundColor: rec.attire.priority === "essential" ? "#ffebee" : "#e8f5e9",
+                                            borderRadius: "4px",
+                                            borderLeft: rec.attire.priority === "essential" ? "3px solid #d32f2f" : "3px solid #4caf50"
+                                        }}>
+                                            <p style={{ margin: "0 0 8px 0", fontWeight: "bold", fontSize: "15px" }}>
+                                                👔 Recommended Attire
+                                                {rec.attire.priority === "essential" && <span style={{ color: "#d32f2f", marginLeft: "8px" }}>(Essential)</span>}
+                                            </p>
+                                            <p style={{ margin: "5px 0" }}>{rec.attire.recommendation}</p>
+                                            <p style={{ margin: "5px 0", fontSize: "13px", fontStyle: "italic", color: "#666" }}>
+                                                {rec.attire.reasoning}
+                                            </p>
+                                            {rec.attire.accessories.length > 0 && (
+                                                <p style={{ margin: "8px 0 0 0", fontSize: "13px" }}>
+                                                    <strong>Bring:</strong> {rec.attire.accessories.join(", ")}
+                                                </p>
                                             )}
                                         </div>
                                     </div>
