@@ -3,45 +3,43 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 
-export default function WeatherAnimation() {
-    const [isRaining, setIsRaining] = useState(true);
-    const [raindrops, setRaindrops] = useState<Array<{ id: number; left: number; delay: number }>>([]);
+interface WeatherAnimationProps {
+    condition: "clear" | "clouds" | "rain" | "snow";
+}
 
-    // Cycle between rain and sun every 15 seconds
+export default function WeatherAnimation({ condition }: WeatherAnimationProps) {
+    const [particles, setParticles] = useState<Array<{ id: number; left: number; delay: number; duration: number }>>([]);
+
+    // Generate particles based on condition
     useEffect(() => {
-        const interval = setInterval(() => {
-            setIsRaining((prev) => !prev);
-        }, 15000);
+        const particleCount = condition === "rain" ? 50 : condition === "snow" ? 30 : 0;
 
-        return () => clearInterval(interval);
-    }, []);
-
-    // Generate raindrops
-    useEffect(() => {
-        if (isRaining) {
-            const drops = Array.from({ length: 50 }, (_, i) => ({
+        if (particleCount > 0) {
+            const newParticles = Array.from({ length: particleCount }, (_, i) => ({
                 id: i,
                 left: Math.random() * 100,
-                delay: Math.random() * 2,
+                delay: Math.random() * (condition === "snow" ? 5 : 2),
+                duration: condition === "snow" ? Math.random() * 5 + 5 : 1.5, // Snow moves slower
             }));
-            setRaindrops(drops);
+            setParticles(newParticles);
         } else {
-            setRaindrops([]);
+            setParticles([]);
         }
-    }, [isRaining]);
+    }, [condition]);
 
     return (
         <div className="fixed inset-0 pointer-events-none z-10">
-            <AnimatePresence>
-                {isRaining && (
+            <AnimatePresence mode="wait">
+                {condition === "rain" && (
                     <motion.div
+                        key="rain"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        transition={{ duration: 2 }}
+                        transition={{ duration: 1 }}
                         className="absolute inset-0"
                     >
-                        {raindrops.map((drop) => (
+                        {particles.map((drop) => (
                             <motion.div
                                 key={drop.id}
                                 initial={{ y: -20, opacity: 0 }}
@@ -50,7 +48,7 @@ export default function WeatherAnimation() {
                                     opacity: [0, 0.6, 0],
                                 }}
                                 transition={{
-                                    duration: 1.5,
+                                    duration: drop.duration,
                                     delay: drop.delay,
                                     repeat: Infinity,
                                     ease: "linear",
@@ -66,16 +64,45 @@ export default function WeatherAnimation() {
                         ))}
                     </motion.div>
                 )}
-            </AnimatePresence>
 
-            {/* Weather indicator (subtle) */}
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 0.3 }}
-                className="absolute top-4 right-4 text-xs text-white/40 font-mono"
-            >
-                {isRaining ? "🌧️ Rainy" : "☀️ Sunny"}
-            </motion.div>
+                {condition === "snow" && (
+                    <motion.div
+                        key="snow"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 2 }}
+                        className="absolute inset-0"
+                    >
+                        {particles.map((flake) => (
+                            <motion.div
+                                key={flake.id}
+                                initial={{ y: -10, opacity: 0, x: 0 }}
+                                animate={{
+                                    y: "100vh",
+                                    opacity: [0, 0.8, 0],
+                                    x: [0, Math.random() * 20 - 10, 0], // Slight horizontal drift
+                                }}
+                                transition={{
+                                    duration: flake.duration,
+                                    delay: flake.delay,
+                                    repeat: Infinity,
+                                    ease: "linear",
+                                }}
+                                style={{
+                                    position: "absolute",
+                                    left: `${flake.left}%`,
+                                    width: "6px",
+                                    height: "6px",
+                                    borderRadius: "50%",
+                                    background: "rgba(255, 255, 255, 0.8)",
+                                    boxShadow: "0 0 5px rgba(255,255,255,0.5)",
+                                }}
+                            />
+                        ))}
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }
