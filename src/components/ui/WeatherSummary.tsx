@@ -7,9 +7,10 @@ import { Cloud, Sun, Moon, Snowflake, Droplets } from "lucide-react";
 
 interface WeatherSummaryProps {
     matches: ClassWeatherMatch[];
+    fullWeatherData?: any; // Full 24-hour weather forecast from API
 }
 
-export default function WeatherSummary({ matches }: WeatherSummaryProps) {
+export default function WeatherSummary({ matches, fullWeatherData }: WeatherSummaryProps) {
     const validMatches = matches.filter(m => m.weather);
     if (validMatches.length === 0) return null;
 
@@ -17,37 +18,92 @@ export default function WeatherSummary({ matches }: WeatherSummaryProps) {
     const containerRef = useRef<HTMLDivElement>(null);
 
     const temps = validMatches.map(m => m.weather!.temp);
-    // Increased vertical padding slightly to further "flatten" the visual arc
     const minTemp = Math.min(...temps) - 6; 
     const maxTemp = Math.max(...temps) + 4;
     const range = maxTemp - minTemp || 1;
 
     const getY = (temp: number) => 100 - (((temp - minTemp) / range) * 50 + 15);
 
+    // Use full API data if available, otherwise fall back to interpolation
     const hourPoints = Array.from({ length: 24 }, (_, i) => {
+        // First, try to get data from full weather API
+        if (fullWeatherData?.hourlyForecasts) {
+            const apiData = fullWeatherData.hourlyForecasts.find((forecast: any) => {
+                const forecastHour = parseInt(forecast.hour.split(':')[0]);
+                return forecastHour === i;
+            });
+            
+            if (apiData) {
+                return {
+                    x: (i / 23) * 100,
+                    yActual: getY(apiData.temp),
+                    yFeels: getY(apiData.feelsLike),
+                    temp: apiData.temp,
+                    feelsLike: apiData.feelsLike,
+                    condition: apiData.condition,
+                    hour: i
+                };
+            }
+        }
+
+        // Fallback: Check if there's a class at this hour
         const match = validMatches.find(m => parseInt(m.class.startTime.split(':')[0]) === i);
-        const actual = match ? match.weather!.temp : (minTemp + maxTemp) / 2 + Math.sin(i / 6) * 2.5;
-        const feelsLike = actual - (Math.cos(i / 6) * 1.5 + 1);
         
-        return {
-            x: (i / 23) * 100,
-            yActual: getY(actual),
-            yFeels: getY(feelsLike),
-            temp: actual,
-            feelsLike: feelsLike,
-            condition: match?.weather!.condition || "clear",
-            hour: i
-        };
+        if (match) {
+            const actual = match.weather!.temp;
+            const feelsLike = match.weather!.feelsLike;
+            return {
+                x: (i / 23) * 100,
+                yActual: getY(actual),
+                yFeels: getY(feelsLike),
+                temp: actual,
+                feelsLike: feelsLike,
+                condition: match.weather!.condition,
+                hour: i
+            };
+        } else {
+            // Linear interpolation as last resort
+            const prevMatch = [...validMatches].reverse().find(m => parseInt(m.class.startTime.split(':')[0]) < i);
+            const nextMatch = validMatches.find(m => parseInt(m.class.startTime.split(':')[0]) > i);
+            
+            let actual, feelsLike;
+            if (prevMatch && nextMatch) {
+                const prevHour = parseInt(prevMatch.class.startTime.split(':')[0]);
+                const nextHour = parseInt(nextMatch.class.startTime.split(':')[0]);
+                const ratio = (i - prevHour) / (nextHour - prevHour);
+                actual = prevMatch.weather!.temp + (nextMatch.weather!.temp - prevMatch.weather!.temp) * ratio;
+                feelsLike = prevMatch.weather!.feelsLike + (nextMatch.weather!.feelsLike - prevMatch.weather!.feelsLike) * ratio;
+            } else if (prevMatch) {
+                actual = prevMatch.weather!.temp;
+                feelsLike = prevMatch.weather!.feelsLike;
+            } else if (nextMatch) {
+                actual = nextMatch.weather!.temp;
+                feelsLike = nextMatch.weather!.feelsLike;
+            } else {
+                actual = (minTemp + maxTemp) / 2;
+                feelsLike = actual - 1;
+            }
+            
+            return {
+                x: (i / 23) * 100,
+                yActual: getY(actual),
+                yFeels: getY(feelsLike),
+                temp: actual,
+                feelsLike: feelsLike,
+                condition: prevMatch?.weather!.condition || "clear",
+                hour: i
+            };
+        }
     });
 
-    // SMOOTHING: Set to 3.5 for a "taut" line—removes the wavy bounce
+    // Simple Bézier smoothing - adjusted to 2.0 for smoother curves
     const getSmoothedPath = (data: {x: number, y: number}[]) => {
         return data.reduce((acc, point, i, a) => {
             if (i === 0) return `M ${point.x},${point.y}`;
             const p1 = a[i - 1];
             const p2 = point;
-            const cp1x = p1.x + (p2.x - p1.x) / 3.5;
-            const cp2x = p2.x - (p2.x - p1.x) / 3.5;
+            const cp1x = p1.x + (p2.x - p1.x) / 2.0;
+            const cp2x = p2.x - (p2.x - p1.x) / 2.0;
             return `${acc} C ${cp1x},${p1.y} ${cp2x},${p2.y} ${p2.x},${p2.y}`;
         }, "");
     };
@@ -135,13 +191,30 @@ export default function WeatherSummary({ matches }: WeatherSummaryProps) {
                 <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 w-full h-full pt-14 pr-12">
                     <defs>
                         <linearGradient id="appleFill" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="#60a5fa" stopOpacity="0.2" />
+                            <stop offset="0%" stopColor="#60a5fa" stopOpacity="0.15" />
                             <stop offset="100%" stopColor="#60a5fa" stopOpacity="0" />
                         </linearGradient>
                     </defs>
                     <path d={smoothArea} fill="url(#appleFill)" />
-                    <motion.path d={feelsLine} fill="none" stroke="#a855f7" strokeWidth="1" strokeOpacity="0.4" />
-                    <motion.path d={actualLine} fill="none" stroke="#93c5fd" strokeWidth="1.2" />
+                    <motion.path 
+                        d={feelsLine} 
+                        fill="none" 
+                        stroke="#a855f7" 
+                        strokeWidth="2.5" 
+                        strokeOpacity="0.5"
+                        vectorEffect="non-scaling-stroke"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                    />
+                    <motion.path 
+                        d={actualLine} 
+                        fill="none" 
+                        stroke="#93c5fd" 
+                        strokeWidth="3" 
+                        vectorEffect="non-scaling-stroke"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                    />
                 </svg>
 
                 {/* 7. Interactive Tooltip */}

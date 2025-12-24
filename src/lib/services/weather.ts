@@ -27,86 +27,86 @@ class DummyWeatherService implements WeatherService {
 }
 
 /**
- * OpenWeather API Service
- * Fetches live weather data from OpenWeather API (5-Day/3-Hour Forecast)
+ * Live Weather API Service
+ * Fetches real-time weather data from external API (currently Tomorrow.io)
  */
-class OpenWeatherService implements WeatherService {
+class LiveWeatherService implements WeatherService {
   private apiKey: string;
-  private baseUrl = "https://api.openweathermap.org/data/2.5/forecast";
+  private baseUrl = "https://api.tomorrow.io/v4/timelines";
 
   constructor(apiKey: string) {
     this.apiKey = apiKey;
   }
 
   async getHourlyForecast(lat: number, lng: number, date: string): Promise<WeatherData> {
-    console.log(`[LIVE] Fetching weather from OpenWeather API for ${lat}, ${lng} on ${date}`);
+    console.log(`[LIVE] Fetching weather from API for ${lat}, ${lng} on ${date}`);
     
-    const url = `${this.baseUrl}?lat=${lat}&lon=${lng}&appid=${this.apiKey}&units=metric`;
+    const targetDate = new Date(date);
+    const startTime = new Date(targetDate);
+    startTime.setHours(0, 0, 0, 0);
+    const endTime = new Date(targetDate);
+    endTime.setHours(23, 59, 59, 999);
+
+    const url = `${this.baseUrl}?location=${lat},${lng}&fields=temperature,temperatureApparent,weatherCode,humidity,windSpeed&timesteps=1h&startTime=${startTime.toISOString()}&endTime=${endTime.toISOString()}&apikey=${this.apiKey}`;
 
     try {
       const response = await fetch(url);
       
       if (!response.ok) {
-        throw new Error(`OpenWeather API error: ${response.status} ${response.statusText}`);
+        throw new Error(`Weather API error: ${response.status} ${response.statusText}`);
       }
 
       const data = await response.json();
       
-      // Parse the target date
-      const targetDate = new Date(date);
-      const targetDateStr = targetDate.toISOString().split('T')[0]; // YYYY-MM-DD
+      if (!data.data?.timelines?.[0]?.intervals) {
+        throw new Error("Invalid API response format");
+      }
 
-      // Filter forecasts for the target date and convert to our format
-      const hourlyForecasts: HourlyForecast[] = data.list
-        .filter((item: any) => {
-          const forecastDate = new Date(item.dt * 1000).toISOString().split('T')[0];
-          return forecastDate === targetDateStr;
-        })
-        .map((item: any) => {
-          const forecastTime = new Date(item.dt * 1000);
-          const hour = forecastTime.getHours().toString().padStart(2, '0');
-          
-          return {
-            hour: `${hour}:00`,
-            temp: Math.round(item.main.temp),
-            feelsLike: Math.round(item.main.feels_like),
-            condition: this.mapWeatherCondition(item.weather[0].main),
-            humidity: item.main.humidity,
-            windSpeed: Math.round(item.wind.speed * 3.6), // Convert m/s to km/h
-          };
-        });
+      const intervals = data.data.timelines[0].intervals;
+
+      // Convert to our format
+      const hourlyForecasts: HourlyForecast[] = intervals.map((interval: any) => {
+        const time = new Date(interval.startTime);
+        const hour = time.getHours().toString().padStart(2, '0');
+        const values = interval.values;
+        
+        return {
+          hour: `${hour}:00`,
+          temp: Math.round(values.temperature),
+          feelsLike: Math.round(values.temperatureApparent),
+          condition: this.mapWeatherCode(values.weatherCode),
+          humidity: Math.round(values.humidity),
+          windSpeed: Math.round(values.windSpeed),
+        };
+      });
 
       if (hourlyForecasts.length === 0) {
         throw new Error(`No weather data available for ${date}`);
       }
 
       return {
-        location: data.city.name || `${lat.toFixed(4)}, ${lng.toFixed(4)}`,
-        date: targetDateStr,
+        location: `${lat.toFixed(4)}, ${lng.toFixed(4)}`,
+        date: date,
         hourlyForecasts,
       };
     } catch (error) {
-      console.error("[LIVE] OpenWeather API failed:", error);
+      console.error("[LIVE] Weather API failed:", error);
       throw error;
     }
   }
 
   /**
-   * Map OpenWeather condition codes to our simplified conditions
+   * Map Tomorrow.io weather codes to our simplified conditions
+   * https://docs.tomorrow.io/reference/data-layers-weather-codes
    */
-  private mapWeatherCondition(condition: string): string {
-    const conditionMap: { [key: string]: string } = {
-      'Clear': 'Clear',
-      'Clouds': 'Cloudy',
-      'Rain': 'Rainy',
-      'Drizzle': 'Rainy',
-      'Thunderstorm': 'Stormy',
-      'Snow': 'Snowy',
-      'Mist': 'Cloudy',
-      'Fog': 'Cloudy',
-    };
-    
-    return conditionMap[condition] || 'Cloudy';
+  private mapWeatherCode(code: number): string {
+    if (code === 1000) return 'Clear';
+    if ([1100, 1101, 1102].includes(code)) return 'Cloudy';
+    if ([4000, 4001, 4200, 4201].includes(code)) return 'Rainy';
+    if ([2000, 2100].includes(code)) return 'Cloudy'; // Fog
+    if ([5000, 5001, 5100, 5101].includes(code)) return 'Snowy';
+    if ([8000].includes(code)) return 'Stormy';
+    return 'Cloudy';
   }
 }
 
@@ -115,11 +115,11 @@ class OpenWeatherService implements WeatherService {
  * Tries live API first, falls back to dummy data on failure
  */
 class HybridWeatherService implements WeatherService {
-  private liveService: OpenWeatherService;
+  private liveService: LiveWeatherService;
   private dummyService: DummyWeatherService;
 
   constructor(apiKey: string) {
-    this.liveService = new OpenWeatherService(apiKey);
+    this.liveService = new LiveWeatherService(apiKey);
     this.dummyService = new DummyWeatherService();
   }
 
@@ -138,7 +138,7 @@ class HybridWeatherService implements WeatherService {
  * Toggle between modes using USE_LIVE_WEATHER environment variable
  */
 const USE_LIVE_WEATHER = process.env.USE_LIVE_WEATHER === "true";
-const API_KEY = process.env.OPENWEATHER_API_KEY || "";
+const API_KEY = process.env.WEATHER_API_KEY || "";
 
 export const weatherService: WeatherService = USE_LIVE_WEATHER
   ? new HybridWeatherService(API_KEY)

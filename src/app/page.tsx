@@ -1,4 +1,4 @@
-// Final Integration Build [9:53 PM]
+// Final Integration Build [11:26 PM]
 "use client";
 
 import { useState } from "react";
@@ -25,6 +25,7 @@ export default function Home() {
     const [loadingStep, setLoadingStep] = useState<string>("");
     const [classes, setClasses] = useState<ParsedClass[]>([]);
     const [classWeatherMatches, setClassWeatherMatches] = useState<ClassWeatherMatch[]>([]);
+    const [fullWeatherData, setFullWeatherData] = useState<any>(null); // Store complete 24-hour forecast
     const [classAttireRecommendations, setClassAttireRecommendations] = useState<ClassAttireRecommendation[]>([]);
     const [masterRecommendation, setMasterRecommendation] = useState<MasterRecommendation | null>(null);
     const [collapsedClasses, setCollapsedClasses] = useState<Set<number>>(new Set());
@@ -178,6 +179,7 @@ export default function Home() {
                         throw new Error(weatherResponse.error || "Failed to fetch weather");
                     }
                     weatherData = weatherResponse.data;
+                    setFullWeatherData(weatherData); // Store for graph
                 } catch (weatherError) {
                     console.error("Weather fetch failed:", weatherError);
                     setStatus("error");
@@ -484,7 +486,7 @@ export default function Home() {
                                 <h3 className="text-lg font-bold mb-6 flex items-center gap-2">
                                     <Cloud className="w-5 h-5 text-white/60" /> Weather Timeline
                                 </h3>
-                                <WeatherSummary matches={classWeatherMatches} />
+                                <WeatherSummary matches={classWeatherMatches} fullWeatherData={fullWeatherData} />
                             </GlassCard>
 
                             {/* Class Recommendations */}
