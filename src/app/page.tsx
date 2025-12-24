@@ -1,10 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { processSchedule, generateAttireRecommendationsAction, generateMasterRecommendationAction } from "@/app/actions";
+import { processSchedule, getWeatherForecastAction, generateAttireRecommendationsAction, generateMasterRecommendationAction } from "@/app/actions";
 import { ParsedClass, University, ClassAttireRecommendation, MasterRecommendation } from "@/types";
 import universitiesData from "@/lib/data/universities.json";
-import { getWeatherForecast } from "@/lib/services/weather";
 import { matchClassesToWeather, filterClassesByDay, ClassWeatherMatch } from "@/lib/utils/weatherMatcher";
 import { resolveAnalysisDay, getDateForAnalysisDay } from "@/lib/utils/dateHelpers";
 import { motion, AnimatePresence } from "framer-motion";
@@ -115,7 +114,11 @@ export default function Home() {
                 setLoadingStep(`Fetching weather data for ${university.shortName}...`);
                 let weatherData;
                 try {
-                    weatherData = await getWeatherForecast(university.lat, university.lng, analysisDate);
+                    const weatherResponse = await getWeatherForecastAction(university.lat, university.lng, analysisDate);
+                    if (!weatherResponse.success || !weatherResponse.data) {
+                        throw new Error(weatherResponse.error || "Failed to fetch weather");
+                    }
+                    weatherData = weatherResponse.data;
                 } catch (weatherError) {
                     console.error("Weather fetch failed:", weatherError);
                     setStatus("error");
