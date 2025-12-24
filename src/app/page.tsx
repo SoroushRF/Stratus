@@ -569,7 +569,7 @@ export default function Home() {
                 </AnimatePresence>
 
                 <footer className="mt-20 pt-8 border-t border-white/10 text-center text-white/30 text-xs font-mono">
-                    <p>STRATUS INTELLIGENCE ENGINE v1.0 • POWERED BY GEMINI 2.0</p>
+                    <p>STRATUS INTELLIGENCE ENGINE v1.0 • POWERED BY GEMINI</p>
                 </footer>
             </div>
         </main>
