@@ -28,10 +28,68 @@ export default function Home() {
     const [classAttireRecommendations, setClassAttireRecommendations] = useState<ClassAttireRecommendation[]>([]);
     const [masterRecommendation, setMasterRecommendation] = useState<MasterRecommendation | null>(null);
     const [collapsedClasses, setCollapsedClasses] = useState<Set<number>>(new Set());
-    const [selectedUniName, setSelectedUniName] = useState<string>("");
+    
+    // Two-tier selection: University → Campus
+    const [selectedUniversity, setSelectedUniversity] = useState<string>(""); // e.g., "University of Toronto"
+    const [selectedCampus, setSelectedCampus] = useState<string>(""); // e.g., "St. George"
+    
     const [selectedDay, setSelectedDay] = useState<string>("today");
     const [error, setError] = useState<string | null>(null);
     const [uploadedFile, setUploadedFile] = useState<{ base64: string; mimeType: string; name: string } | null>(null);
+
+    // Get unique university names (grouped by shortName)
+    const getUniversityNames = () => {
+        const uniqueNames = new Map<string, string>();
+        universities.forEach(uni => {
+            if (!uniqueNames.has(uni.shortName)) {
+                // Extract base name (remove campus info in parentheses)
+                const baseName = uni.name.split(' (')[0];
+                uniqueNames.set(uni.shortName, baseName);
+            }
+        });
+        return Array.from(uniqueNames.values()).sort();
+    };
+
+    // Get campuses for selected university
+    const getCampusesForUniversity = (universityBaseName: string) => {
+        return universities
+            .filter(uni => uni.name.startsWith(universityBaseName))
+            .map(uni => ({
+                campus: uni.campus,
+                fullName: uni.name
+            }));
+    };
+
+    // Get the full university object based on selections
+    const getSelectedUniversityData = () => {
+        if (!selectedUniversity) return null;
+        
+        const campuses = getCampusesForUniversity(selectedUniversity);
+        
+        // If only one campus, use it automatically
+        if (campuses.length === 1) {
+            return universities.find(uni => uni.name === campuses[0].fullName);
+        }
+        
+        // If multiple campuses, need campus selection
+        if (!selectedCampus) return null;
+        
+        return universities.find(uni => 
+            uni.name.startsWith(selectedUniversity) && uni.campus === selectedCampus
+        );
+    };
+
+    // Handle university selection
+    const handleUniversityChange = (uniName: string) => {
+        setSelectedUniversity(uniName);
+        setSelectedCampus(""); // Reset campus when university changes
+        
+        // Auto-select if only one campus
+        const campuses = getCampusesForUniversity(uniName);
+        if (campuses.length === 1) {
+            setSelectedCampus(campuses[0].campus);
+        }
+    };
 
     // Helper functions for UI Logic
     const toggleClass = (idx: number) => {
@@ -93,7 +151,7 @@ export default function Home() {
                 const parsedClasses = response.data;
                 setClasses(parsedClasses);
 
-                const university = universities.find(u => u.name === selectedUniName);
+                const university = getSelectedUniversityData();
                 if (!university) {
                     setStatus("error");
                     setError("Selected university not found. Please select a valid campus from the list.");
@@ -225,12 +283,53 @@ export default function Home() {
                                     <MapPin className="text-primary w-5 h-5" />
                                     <h2 className="text-xl font-semibold">Select Your Campus</h2>
                                 </div>
-                                <CampusSelector
-                                    value={selectedUniName}
-                                    onChange={setSelectedUniName}
-                                    universities={universities}
-                                    disabled={status === "loading"}
-                                />
+                                <div className="space-y-4">
+                                {/* University Selection */}
+                                <div className="relative">
+                                    <select
+                                        value={selectedUniversity}
+                                        onChange={(e) => handleUniversityChange(e.target.value)}
+                                        disabled={status === "loading"}
+                                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white appearance-none focus:outline-none focus:ring-2 focus:ring-primary/50 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        <option value="" className="bg-gray-900">Select a university...</option>
+                                        {getUniversityNames().map((uniName) => (
+                                            <option key={uniName} value={uniName} className="bg-gray-900">
+                                                {uniName}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-white/50">
+                                        <ChevronDown className="w-5 h-5" />
+                                    </div>
+                                </div>
+
+                                {/* Campus Selection (only if multiple campuses) */}
+                                {selectedUniversity && getCampusesForUniversity(selectedUniversity).length > 1 && (
+                                    <motion.div
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: "auto" }}
+                                        className="relative"
+                                    >
+                                        <select
+                                            value={selectedCampus}
+                                            onChange={(e) => setSelectedCampus(e.target.value)}
+                                            disabled={status === "loading"}
+                                            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white appearance-none focus:outline-none focus:ring-2 focus:ring-primary/50 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            <option value="" className="bg-gray-900">Select a campus...</option>
+                                            {getCampusesForUniversity(selectedUniversity).map((campus) => (
+                                                <option key={campus.campus} value={campus.campus} className="bg-gray-900">
+                                                    {campus.campus}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-white/50">
+                                            <ChevronDown className="w-5 h-5" />
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </div>
                             </GlassCard>
 
                             {/* Date Selection */}
@@ -267,9 +366,9 @@ export default function Home() {
                                 <FileUpload
                                     onFileSelect={handleFileChange}
                                     uploadedFileName={uploadedFile?.name}
-                                    disabled={status === "loading" || !selectedUniName}
+                                    disabled={status === "loading" || !getSelectedUniversityData()}
                                 />
-                                {!selectedUniName && (
+                                {!getSelectedUniversityData() && (
                                     <p className="mt-2 text-sm text-red-400 flex items-center gap-2">
                                         <AlertCircle className="w-3 h-3" /> Please select a campus first
                                     </p>
@@ -285,7 +384,7 @@ export default function Home() {
                             >
                                 <AnimatedButton
                                     onClick={handleAnalyze}
-                                    disabled={status === "loading" || !selectedUniName || !uploadedFile}
+                                    disabled={status === "loading" || !getSelectedUniversityData() || !uploadedFile}
                                     className="w-full text-lg py-4 shadow-2xl"
                                 >
                                     {status === "loading" ? (
@@ -330,7 +429,7 @@ export default function Home() {
                             {/* Actions Header */}
                             <div className="flex justify-between items-center bg-white/5 p-4 rounded-2xl backdrop-blur-md border border-white/10">
                                 <div>
-                                    <h2 className="text-2xl font-bold">{selectedUniName}</h2>
+                                    <h2 className="text-2xl font-bold">{getSelectedUniversityData()?.name || "Unknown Campus"}</h2>
                                     <p className="text-white/50 text-sm">
                                         {getDayOptions().find(opt => opt.value === selectedDay)?.label}
                                     </p>
