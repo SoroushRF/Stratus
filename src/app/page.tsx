@@ -48,13 +48,13 @@ export default function Home() {
         const days = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
         const today = new Date();
         const todayIndex = today.getDay();
-        
+
         const options = [];
         options.push({ value: "today", label: `Today (${days[todayIndex]})` });
-        
+
         const tomorrowIndex = (todayIndex + 1) % 7;
         options.push({ value: "tomorrow", label: `Tomorrow (${days[tomorrowIndex]})` });
-        
+
         for (let i = 2; i < 7; i++) {
             const dayIndex = (todayIndex + i) % 7;
             const dayName = days[dayIndex];
@@ -137,13 +137,13 @@ export default function Home() {
 
                 setLoadingStep(`Generating clothing recommendations...`);
                 const attireResponse = await generateAttireRecommendationsAction(matches);
-                
+
                 if (attireResponse.success && attireResponse.data) {
                     setClassAttireRecommendations(attireResponse.data);
-                    
+
                     setLoadingStep("Finalizing outfit strategy...");
                     const masterResponse = await generateMasterRecommendationAction(attireResponse.data);
-                    
+
                     if (masterResponse.success && masterResponse.data) {
                         setMasterRecommendation(masterResponse.data);
                     }
@@ -169,13 +169,31 @@ export default function Home() {
         }
     };
 
+    // Helper to determine background weather animation
+    const getBackgroundCondition = (): "clear" | "clouds" | "rain" | "snow" => {
+        if (!classWeatherMatches || classWeatherMatches.length === 0) return "clear";
+
+        const conditions = classWeatherMatches
+            .map(m => m.weather?.condition.toLowerCase() || "")
+            .filter(c => c !== "");
+
+        // Priority: Snow > Rain > Clouds > Clear
+        if (conditions.some(c => c.includes("snow"))) return "snow";
+        if (conditions.some(c => c.includes("rain") || c.includes("drizzle") || c.includes("thunder"))) return "rain";
+        if (conditions.some(c => c.includes("cloud") || c.includes("overcast"))) return "clouds";
+
+        return "clear";
+    };
+
+    const backgroundCondition = getBackgroundCondition();
+
     return (
         <main className="min-h-screen text-white relative">
-            <PremiumBackground />
+            <PremiumBackground weatherCondition={backgroundCondition} />
 
             <div className="container mx-auto px-4 py-8 md:py-16 relative z-10 max-w-4xl">
                 {/* Header */}
-                <motion.div 
+                <motion.div
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="text-center mb-12"
@@ -242,8 +260,8 @@ export default function Home() {
                                     <Cloud className="text-primary w-5 h-5" />
                                     <h2 className="text-xl font-semibold">Upload Schedule</h2>
                                 </div>
-                                <FileUpload 
-                                    onFileSelect={handleFileChange} 
+                                <FileUpload
+                                    onFileSelect={handleFileChange}
                                     uploadedFileName={uploadedFile?.name}
                                     disabled={status === "loading" || !selectedUniName}
                                 />
@@ -255,7 +273,7 @@ export default function Home() {
                             </GlassCard>
 
                             {/* Analyze Button */}
-                            <motion.div 
+                            <motion.div
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 transition={{ delay: 0.4 }}
@@ -288,8 +306,8 @@ export default function Home() {
                                     <div>
                                         <p className="font-semibold">Analysis Failed</p>
                                         <p className="text-sm opacity-80">{error}</p>
-                                        <button 
-                                            onClick={() => setStatus("idle")} 
+                                        <button
+                                            onClick={() => setStatus("idle")}
                                             className="mt-2 text-xs uppercase tracking-wider font-bold hover:text-white transition-colors"
                                         >
                                             Try Again
@@ -370,17 +388,17 @@ export default function Home() {
                             <div className="space-y-4">
                                 <h3 className="text-lg font-bold text-white/60 px-2">Class-by-Class Breakdown</h3>
                                 {classAttireRecommendations.map((rec, idx) => (
-                                    <motion.div 
+                                    <motion.div
                                         key={idx}
                                         initial={{ opacity: 0, x: -20 }}
                                         animate={{ opacity: 1, x: 0 }}
                                         transition={{ delay: idx * 0.1 }}
                                     >
-                                        <GlassCard 
+                                        <GlassCard
                                             className={`transition-all duration-300 ${collapsedClasses.has(idx) ? 'bg-white/5' : 'bg-white/10'}`}
                                             hover={false}
                                         >
-                                            <div 
+                                            <div
                                                 onClick={() => toggleClass(idx)}
                                                 className="cursor-pointer flex items-center justify-between"
                                             >
@@ -440,7 +458,7 @@ export default function Home() {
                                     </motion.div>
                                 ))}
                             </div>
-                        
+
                         </motion.div>
                     )}
                 </AnimatePresence>

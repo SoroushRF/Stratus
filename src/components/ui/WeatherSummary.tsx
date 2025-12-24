@@ -50,36 +50,50 @@ export default function WeatherSummary({ matches }: WeatherSummaryProps) {
                 ))}
             </div>
 
-            <div className="relative h-24 flex items-end justify-between px-2 pt-8">
-                {/* Timeline Path */}
-                <div className="absolute top-[60%] left-0 right-0 h-px bg-white/10" />
-
+            {/* Bar Chart Visualization */}
+            <div className="h-48 flex items-end justify-between gap-2 mt-4 px-2">
                 {validMatches.map((match, i) => {
                     const temp = match.weather!.temp;
-                    const height = ((temp - minTemp) / range) * 40 + 20;
+                    // Calculate height percentage (min height 20%, max 100%)
+                    const heightPercent = Math.max(20, Math.min(100, ((temp - minTemp) / range) * 80 + 20));
 
                     return (
-                        <motion.div
-                            key={i}
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: `${height}%`, opacity: 1 }}
-                            transition={{ delay: i * 0.1 + 0.5, duration: 1 }}
-                            className="relative flex flex-col items-center group w-full"
-                        >
-                            <div className="absolute top-0 w-2 h-2 rounded-full bg-primary shadow-[0_0_10px_rgba(0,183,255,0.8)] -translate-y-1" />
-
-                            <div className="absolute -top-6 text-[10px] font-bold text-white opacity-0 group-hover:opacity-100 transition-opacity bg-primary scale-90 px-1 rounded">
-                                {temp.toFixed(1)}°
-                            </div>
-
-                            <div className="absolute -top-12 scale-75">
+                        <div key={i} className="flex flex-col items-center justify-end h-full w-full group relative">
+                            {/* Weather Icon (Floating above) */}
+                            <motion.div
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: i * 0.1 + 0.3 }}
+                                className="mb-2 p-2 bg-white/5 rounded-full border border-white/5 backdrop-blur-sm"
+                            >
                                 {getWeatherIcon(match.weather!.condition)}
+                            </motion.div>
+
+                            {/* The Bar */}
+                            <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: `${heightPercent}%`, opacity: 1 }}
+                                transition={{ delay: i * 0.1, duration: 0.8, ease: "easeOut" }}
+                                className="w-full max-w-[40px] bg-gradient-to-t from-white/5 to-white/20 rounded-t-xl border-t border-x border-white/10 relative overflow-hidden group-hover:from-primary/20 group-hover:to-primary/40 transition-colors duration-300"
+                            >
+                                {/* Tooltip / Temp Label */}
+                                <div className="absolute inset-0 flex items-start justify-center pt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <span className="text-xs font-bold text-white shadow-black/50 drop-shadow-md">{temp.toFixed(1)}°</span>
+                                </div>
+                            </motion.div>
+
+                            {/* Time & Course Label - Fixed height to ensure bar alignment */}
+                            <div className="mt-2 h-[50px] flex flex-col items-center justify-start gap-1">
+                                <span className="text-[10px] sm:text-xs text-white/40 font-mono font-medium tracking-wider">
+                                    {match.class.startTime.split(' ')[0]}
+                                </span>
+                                <span className="text-[10px] text-white/70 font-bold text-center leading-tight max-w-[80px] line-clamp-2">
+                                    {match.class.name}
+                                </span>
                             </div>
 
-                            <div className="absolute -bottom-6 text-[9px] text-white/30 font-mono">
-                                {match.class.startTime.split(' ')[0]}
-                            </div>
-                        </motion.div>
+
+                        </div>
                     );
                 })}
             </div>
