@@ -7,6 +7,16 @@ import universitiesData from "@/lib/data/universities.json";
 import { getWeatherForecast } from "@/lib/services/weather";
 import { matchClassesToWeather, filterClassesByDay, ClassWeatherMatch } from "@/lib/utils/weatherMatcher";
 import { resolveAnalysisDay, getDateForAnalysisDay } from "@/lib/utils/dateHelpers";
+import { motion, AnimatePresence } from "framer-motion";
+import { Cloud, Sparkles, Droplets, MapPin, Calendar, ChevronDown, ChevronUp, AlertCircle, Shirt, Wind, Thermometer } from "lucide-react";
+
+// UI Components
+import PremiumBackground from "@/components/ui/PremiumBackground";
+import GlassCard from "@/components/ui/GlassCard";
+import AnimatedButton from "@/components/ui/AnimatedButton";
+import CampusSelector from "@/components/ui/CampusSelector";
+import FileUpload from "@/components/ui/FileUpload";
+import WeatherSummary from "@/components/ui/WeatherSummary";
 
 const universities = universitiesData as University[];
 
@@ -23,25 +33,7 @@ export default function Home() {
     const [error, setError] = useState<string | null>(null);
     const [uploadedFile, setUploadedFile] = useState<{ base64: string; mimeType: string; name: string } | null>(null);
 
-    // Helper functions
-    const getWeatherIcon = (condition: string): string => {
-        const c = condition.toLowerCase();
-        if (c.includes("clear") || c.includes("sun")) return "☀️";
-        if (c.includes("cloud")) return "☁️";
-        if (c.includes("rain") || c.includes("drizzle")) return "🌧️";
-        if (c.includes("snow")) return "❄️";
-        if (c.includes("thunder") || c.includes("storm")) return "⛈️";
-        return "🌤️";
-    };
-
-    const getTempLabel = (temp: number): string => {
-        if (temp < 0) return "FREEZING";
-        if (temp < 10) return "COLD";
-        if (temp < 20) return "MILD";
-        if (temp < 30) return "WARM";
-        return "HOT";
-    };
-
+    // Helper functions for UI Logic
     const toggleClass = (idx: number) => {
         const newCollapsed = new Set(collapsedClasses);
         if (newCollapsed.has(idx)) {
@@ -52,37 +44,27 @@ export default function Home() {
         setCollapsedClasses(newCollapsed);
     };
 
-    // Generate day options based on current day
     const getDayOptions = () => {
         const days = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
         const today = new Date();
-        const todayIndex = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
+        const todayIndex = today.getDay();
         
         const options = [];
-        
-        // Add "Today (DayName)"
         options.push({ value: "today", label: `Today (${days[todayIndex]})` });
         
-        // Add "Tomorrow (DayName)"
         const tomorrowIndex = (todayIndex + 1) % 7;
         options.push({ value: "tomorrow", label: `Tomorrow (${days[tomorrowIndex]})` });
         
-        // Add next 5 days
         for (let i = 2; i < 7; i++) {
             const dayIndex = (todayIndex + i) % 7;
             const dayName = days[dayIndex];
             options.push({ value: dayName, label: dayName });
         }
-        
         return options;
     };
 
-    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
+    const handleFileChange = async (file: File) => {
         setError(null);
-
         try {
             const reader = new FileReader();
             reader.readAsDataURL(file);
@@ -111,7 +93,6 @@ export default function Home() {
                 const parsedClasses = response.data;
                 setClasses(parsedClasses);
 
-                // Find selected university
                 const university = universities.find(u => u.name === selectedUniName);
                 if (!university) {
                     setStatus("error");
@@ -120,29 +101,21 @@ export default function Home() {
                     return;
                 }
 
-                // Resolve the analysis day and date
                 const actualDay = resolveAnalysisDay(selectedDay);
                 const analysisDate = getDateForAnalysisDay(selectedDay);
-
-                // Filter classes for the selected day
                 const dayClasses = filterClassesByDay(parsedClasses, actualDay);
 
                 if (dayClasses.length === 0) {
                     setStatus("error");
-                    setError(`No classes found for ${getDayOptions().find(opt => opt.value === selectedDay)?.label || selectedDay}. Try selecting a different day.`);
+                    setError(`No classes found for ${getDayOptions().find(opt => opt.value === selectedDay)?.label || selectedDay}.`);
                     setLoadingStep("");
                     return;
                 }
 
-                // Fetch weather
                 setLoadingStep(`Fetching weather data for ${university.shortName}...`);
                 let weatherData;
                 try {
-                    weatherData = await getWeatherForecast(
-                        university.lat,
-                        university.lng,
-                        analysisDate
-                    );
+                    weatherData = await getWeatherForecast(university.lat, university.lng, analysisDate);
                 } catch (weatherError) {
                     console.error("Weather fetch failed:", weatherError);
                     setStatus("error");
@@ -151,40 +124,32 @@ export default function Home() {
                     return;
                 }
 
-                // Match classes to weather
                 const matches = matchClassesToWeather(dayClasses, weatherData);
                 setClassWeatherMatches(matches);
 
-                // Check if we have any weather data
                 const hasWeatherData = matches.some(m => m.weather !== null);
                 if (!hasWeatherData) {
                     setStatus("error");
-                    setError("No weather data available for the selected date. The date might be outside the available range.");
+                    setError("No weather data available for the selected date.");
                     setLoadingStep("");
                     return;
                 }
 
-                // Generate attire recommendations
-                setLoadingStep(`Generating clothing recommendations (${matches.length} classes)...`);
+                setLoadingStep(`Generating clothing recommendations...`);
                 const attireResponse = await generateAttireRecommendationsAction(matches);
                 
                 if (attireResponse.success && attireResponse.data) {
                     setClassAttireRecommendations(attireResponse.data);
                     
-                    // Generate master recommendation
-                    setLoadingStep("Creating master outfit recommendation...");
+                    setLoadingStep("Finalizing outfit strategy...");
                     const masterResponse = await generateMasterRecommendationAction(attireResponse.data);
                     
                     if (masterResponse.success && masterResponse.data) {
                         setMasterRecommendation(masterResponse.data);
-                    } else {
-                        console.error("Failed to generate master recommendation:", masterResponse.error);
-                        // Continue anyway - individual recommendations are still useful
                     }
                 } else {
-                    console.error("Failed to generate recommendations:", attireResponse.error);
                     setStatus("error");
-                    setError("Failed to generate clothing recommendations. Please try again.");
+                    setError("Failed to generate recommendations. Please try again.");
                     setLoadingStep("");
                     return;
                 }
@@ -193,7 +158,7 @@ export default function Home() {
                 setLoadingStep("");
             } else {
                 setStatus("error");
-                setError(response.error || "Failed to parse schedule. Make sure the file contains a valid schedule.");
+                setError(response.error || "Failed to parse schedule.");
                 setLoadingStep("");
             }
         } catch (err) {
@@ -205,388 +170,285 @@ export default function Home() {
     };
 
     return (
-        <div style={{ padding: "40px", fontFamily: "sans-serif", maxWidth: "800px", margin: "0 auto", backgroundColor: "#fff", color: "#000", minHeight: "100vh" }}>
-            <h1 style={{ borderBottom: "2px solid #000", paddingBottom: "10px" }}>Parser Test Dashboard</h1>
-            
-            {status !== "success" && (
-                <div style={{ marginTop: "20px" }}>
-                    <div style={{ marginBottom: "30px" }}>
-                        <h3>Select Your Campus</h3>
-                        <input 
-                            list="universities" 
-                            placeholder="Type to search campus..." 
-                            value={selectedUniName}
-                            onChange={(e) => setSelectedUniName(e.target.value)}
-                            style={{ padding: "10px", border: "1px solid #ccc", width: "100%", outline: "none" }}
-                        />
-                        <datalist id="universities">
-                            {universities.map((uni, idx) => (
-                                <option key={idx} value={uni.name} />
-                            ))}
-                        </datalist>
-                    </div>
+        <main className="min-h-screen text-white relative">
+            <PremiumBackground />
 
-                    <div style={{ marginBottom: "30px" }}>
-                        <h3>Select Analysis Day</h3>
-                        <select 
-                            value={selectedDay}
-                            onChange={(e) => setSelectedDay(e.target.value)}
-                            style={{ padding: "10px", border: "1px solid #ccc", width: "100%", outline: "none" }}
+            <div className="container mx-auto px-4 py-8 md:py-16 relative z-10 max-w-4xl">
+                {/* Header */}
+                <motion.div 
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-center mb-12"
+                >
+                    <h1 className="text-5xl md:text-7xl font-bold mb-4 tracking-tighter bg-clip-text text-transparent bg-gradient-to-b from-white via-white/80 to-white/40">
+                        Stratus
+                    </h1>
+                    <p className="text-lg text-white/60">
+                        AI-Powered Weather & Attire Intelligence
+                    </p>
+                </motion.div>
+
+                <AnimatePresence mode="wait">
+                    {status !== "success" ? (
+                        <motion.div
+                            key="input-form"
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 1.05, filter: "blur(10px)" }}
+                            className="space-y-6"
                         >
-                            {getDayOptions().map((option, idx) => (
-                                <option key={idx} value={option.value}>{option.label}</option>
-                            ))}
-                        </select>
-                    </div>
+                            {/* Campus Selection */}
+                            <GlassCard delay={0.1}>
+                                <div className="flex items-center gap-3 mb-4">
+                                    <MapPin className="text-primary w-5 h-5" />
+                                    <h2 className="text-xl font-semibold">Select Your Campus</h2>
+                                </div>
+                                <CampusSelector
+                                    value={selectedUniName}
+                                    onChange={setSelectedUniName}
+                                    universities={universities}
+                                    disabled={status === "loading"}
+                                />
+                            </GlassCard>
 
-                    <div style={{ marginBottom: "30px" }}>
-                        <h3>Upload Schedule (PDF/Image)</h3>
-                        <input 
-                            type="file" 
-                            onChange={handleFileChange} 
-                            disabled={status === "loading" || !selectedUniName}
-                            accept="image/*,application/pdf"
-                            style={{ padding: "10px", border: "1px solid #ccc", width: "100%" }}
-                        />
-                        {!selectedUniName && <p style={{ fontSize: "12px", color: "#666" }}>* Select a campus first</p>}
-                        {uploadedFile && (
-                            <div style={{ marginTop: "10px", padding: "10px", backgroundColor: "#f0f0f0", border: "1px solid #ccc" }}>
-                                <p style={{ margin: 0, fontSize: "14px" }}>✅ File uploaded: <strong>{uploadedFile.name}</strong></p>
-                            </div>
-                        )}
-                    </div>
+                            {/* Date Selection */}
+                            <GlassCard delay={0.2}>
+                                <div className="flex items-center gap-3 mb-4">
+                                    <Calendar className="text-primary w-5 h-5" />
+                                    <h2 className="text-xl font-semibold">Select Analysis Day</h2>
+                                </div>
+                                <div className="relative">
+                                    <select
+                                        value={selectedDay}
+                                        onChange={(e) => setSelectedDay(e.target.value)}
+                                        disabled={status === "loading"}
+                                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white appearance-none focus:outline-none focus:ring-2 focus:ring-primary/50 cursor-pointer"
+                                    >
+                                        {getDayOptions().map((opt) => (
+                                            <option key={opt.value} value={opt.value} className="bg-gray-900 text-white">
+                                                {opt.label}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-white/50">
+                                        <ChevronDown className="w-5 h-5" />
+                                    </div>
+                                </div>
+                            </GlassCard>
 
-                    <div style={{ marginBottom: "30px" }}>
-                        <h3>Ready to Analyze</h3>
-                        <p style={{ fontSize: "14px", color: "#666", marginBottom: "10px" }}>
-                            {!selectedUniName || !uploadedFile 
-                                ? "Complete the steps above to enable analysis."
-                                : "Review your selections above. You can change the campus, day, or upload a different file before analyzing."
-                            }
-                        </p>
-                        <button
-                            onClick={handleAnalyze}
-                            disabled={status === "loading" || !selectedUniName || !uploadedFile}
-                            style={{
-                                padding: "15px 30px",
-                                fontSize: "16px",
-                                fontWeight: "bold",
-                                backgroundColor: (status === "loading" || !selectedUniName || !uploadedFile) ? "#ccc" : "#000",
-                                color: (status === "loading" || !selectedUniName || !uploadedFile) ? "#999" : "#fff",
-                                border: "none",
-                                cursor: (status === "loading" || !selectedUniName || !uploadedFile) ? "not-allowed" : "pointer",
-                                width: "100%",
-                                transition: "all 0.2s ease"
-                            }}
-                        >
-                            {status === "loading" ? "Analyzing..." : "🚀 Analyze Schedule"}
-                        </button>
-                    </div>
+                            {/* File Upload */}
+                            <GlassCard delay={0.3}>
+                                <div className="flex items-center gap-3 mb-4">
+                                    <Cloud className="text-primary w-5 h-5" />
+                                    <h2 className="text-xl font-semibold">Upload Schedule</h2>
+                                </div>
+                                <FileUpload 
+                                    onFileSelect={handleFileChange} 
+                                    uploadedFileName={uploadedFile?.name}
+                                    disabled={status === "loading" || !selectedUniName}
+                                />
+                                {!selectedUniName && (
+                                    <p className="mt-2 text-sm text-red-400 flex items-center gap-2">
+                                        <AlertCircle className="w-3 h-3" /> Please select a campus first
+                                    </p>
+                                )}
+                            </GlassCard>
 
-                    {status === "loading" && (
-                        <div style={{ marginTop: "15px", padding: "15px", border: "2px solid #000", backgroundColor: "#f0f0f0" }}>
-                            <p style={{ margin: "0 0 10px 0" }}><strong>Processing...</strong></p>
-                            {loadingStep && (
-                                <p style={{ margin: "0", fontSize: "14px" }}>
-                                    ⏳ {loadingStep}
-                                </p>
-                            )}
-                        </div>
-                    )}
-                    {status === "error" && (
-                        <div style={{ marginTop: "15px", padding: "15px", border: "2px solid #d32f2f", backgroundColor: "#ffebee", color: "#d32f2f" }}>
-                            <p style={{ margin: "0 0 5px 0" }}><strong>❌ Error</strong></p>
-                            <p style={{ margin: "0", fontSize: "14px" }}>{error}</p>
-                            <button 
-                                onClick={() => setStatus("idle")}
-                                style={{ marginTop: "10px", padding: "5px 15px", cursor: "pointer", backgroundColor: "#fff", border: "1px solid #d32f2f", color: "#d32f2f" }}
+                            {/* Analyze Button */}
+                            <motion.div 
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ delay: 0.4 }}
+                                className="pt-4"
                             >
-                                Try Again
-                            </button>
-                        </div>
-                    )}
-                </div>
-            )}
+                                <AnimatedButton
+                                    onClick={handleAnalyze}
+                                    disabled={status === "loading" || !selectedUniName || !uploadedFile}
+                                    className="w-full text-lg py-4 shadow-2xl"
+                                >
+                                    {status === "loading" ? (
+                                        <span className="flex items-center justify-center gap-3">
+                                            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                            {loadingStep || "Analyzing..."}
+                                        </span>
+                                    ) : (
+                                        "🚀 Analyze Schedule"
+                                    )}
+                                </AnimatedButton>
+                            </motion.div>
 
-            {status === "success" && (
-                <div style={{ marginTop: "30px" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <div>
-                            <h2>Results</h2>
-                            <p style={{ margin: 0, color: "#666" }}>Campus: {selectedUniName}</p>
-                            <p style={{ margin: 0, color: "#666" }}>
-                                Analysis Day: {getDayOptions().find(opt => opt.value === selectedDay)?.label || selectedDay}
-                            </p>
-                        </div>
-                        <button onClick={() => setStatus("idle")} style={{ padding: "5px 15px", cursor: "pointer" }}>Upload New</button>
-                    </div>
+                            {/* Error Message */}
+                            {status === "error" && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-200 flex items-start gap-3"
+                                >
+                                    <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+                                    <div>
+                                        <p className="font-semibold">Analysis Failed</p>
+                                        <p className="text-sm opacity-80">{error}</p>
+                                        <button 
+                                            onClick={() => setStatus("idle")} 
+                                            className="mt-2 text-xs uppercase tracking-wider font-bold hover:text-white transition-colors"
+                                        >
+                                            Try Again
+                                        </button>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </motion.div>
+                    ) : (
+                        <motion.div
+                            key="results"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="space-y-8"
+                        >
+                            {/* Actions Header */}
+                            <div className="flex justify-between items-center bg-white/5 p-4 rounded-2xl backdrop-blur-md border border-white/10">
+                                <div>
+                                    <h2 className="text-2xl font-bold">{selectedUniName}</h2>
+                                    <p className="text-white/50 text-sm">
+                                        {getDayOptions().find(opt => opt.value === selectedDay)?.label}
+                                    </p>
+                                </div>
+                                <AnimatedButton variant="secondary" onClick={() => setStatus("idle")} className="py-2 px-4 text-sm">
+                                    New Search
+                                </AnimatedButton>
+                            </div>
 
-                    <div style={{ marginTop: "20px" }}>
-                        {classAttireRecommendations.length === 0 ? (
-                            <p>No classes found for the selected day.</p>
-                        ) : (
-                            <div>
-                                {/* Master Recommendation - Hero Element */}
-                                {masterRecommendation && (
-                                    <div style={{
-                                        marginBottom: "30px",
-                                        padding: "25px",
-                                        background: "white",
-                                        color: "black",
-                                        border: "2px solid #000",
-                                        borderRadius: "8px"
-                                    }}>
-                                        <h3 style={{ margin: "0 0 15px 0", fontSize: "24px" }}>
-                                            🎯 Master Outfit for the Day
-                                        </h3>
-                                        
-                                        <div style={{ marginBottom: "15px" }}>
-                                            <p style={{ margin: "0 0 5px 0", fontSize: "12px", opacity: 0.7 }}>
-                                                TEMPERATURE RANGE
-                                            </p>
-                                            <p style={{ margin: "0", fontSize: "18px", fontWeight: "bold" }}>
-                                                {masterRecommendation.weatherRange.minTemp}°C → {masterRecommendation.weatherRange.maxTemp}°C
-                                            </p>
-                                            <p style={{ margin: "5px 0 0 0", fontSize: "14px", opacity: 0.7 }}>
-                                                Conditions: {masterRecommendation.weatherRange.conditions.join(", ")}
+                            {/* Master Strategy Card */}
+                            {masterRecommendation && (
+                                <GlassCard className="border-l-4 border-l-primary bg-gradient-to-br from-primary/10 to-purple-500/5">
+                                    <div className="flex items-center gap-2 mb-6">
+                                        <Sparkles className="text-primary w-6 h-6" />
+                                        <h3 className="text-xl font-bold uppercase tracking-wider">AI Master Strategy</h3>
+                                    </div>
+
+                                    <div className="grid md:grid-cols-3 gap-6 mb-8">
+                                        <div className="space-y-1">
+                                            <p className="text-xs text-white/40 font-mono">CONDITION</p>
+                                            <p className="text-lg font-semibold">{masterRecommendation.weatherRange.conditions[0]}</p>
+                                            <p className="text-sm text-white/60">
+                                                {masterRecommendation.weatherRange.minTemp}° - {masterRecommendation.weatherRange.maxTemp}°C
                                             </p>
                                         </div>
-
-                                        <div style={{ marginBottom: "15px" }}>
-                                            <p style={{ margin: "0 0 5px 0", fontSize: "12px", opacity: 0.7 }}>
-                                                BASE OUTFIT
-                                            </p>
-                                            <p style={{ margin: "0", fontSize: "16px" }}>
-                                                {masterRecommendation.baseOutfit}
-                                            </p>
-                                        </div>
-
-                                        <div style={{ marginBottom: "15px" }}>
-                                            <p style={{ margin: "0 0 5px 0", fontSize: "12px", opacity: 0.7 }}>
-                                                LAYERING STRATEGY
-                                            </p>
-                                            <p style={{ margin: "0", fontSize: "16px" }}>
-                                                {masterRecommendation.layeringStrategy}
-                                            </p>
-                                        </div>
-
-                                        {masterRecommendation.essentialAccessories.length > 0 && (
-                                            <div style={{ marginBottom: "15px" }}>
-                                                <p style={{ margin: "0 0 5px 0", fontSize: "12px", opacity: 0.7 }}>
-                                                    ESSENTIAL ACCESSORIES
-                                                </p>
-                                                <p style={{ margin: "0", fontSize: "16px" }}>
-                                                    {masterRecommendation.essentialAccessories.join(" • ")}
-                                                </p>
-                                            </div>
-                                        )}
-
-                                        <div style={{ 
-                                            marginTop: "15px", 
-                                            paddingTop: "15px", 
-                                            borderTop: "1px solid #ddd"
-                                        }}>
-                                            <p style={{ margin: "0", fontSize: "14px", fontStyle: "italic", opacity: 0.7 }}>
-                                                💡 {masterRecommendation.reasoning}
-                                            </p>
+                                        <div className="space-y-1 md:col-span-2">
+                                            <p className="text-xs text-white/40 font-mono">STRATEGY</p>
+                                            <p className="text-lg leading-relaxed">{masterRecommendation.baseOutfit}</p>
                                         </div>
                                     </div>
-                                )}
 
-                                <h3 style={{ marginBottom: "15px" }}>
-                                    Class Details ({classAttireRecommendations.length} classes)
+                                    <div className="bg-white/5 rounded-xl p-4 border border-white/10 mb-6">
+                                        <p className="text-sm italic text-white/80">
+                                            "{masterRecommendation.reasoning}"
+                                        </p>
+                                    </div>
+
+                                    {masterRecommendation.essentialAccessories.length > 0 && (
+                                        <div className="flex flex-wrap gap-2">
+                                            {masterRecommendation.essentialAccessories.map((acc, i) => (
+                                                <span key={i} className="px-3 py-1 bg-white/10 rounded-full text-xs font-medium border border-white/10">
+                                                    + {acc}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    )}
+                                </GlassCard>
+                            )}
+
+                            {/* Weather Timeline */}
+                            <GlassCard>
+                                <h3 className="text-lg font-bold mb-6 flex items-center gap-2">
+                                    <Cloud className="w-5 h-5 text-white/60" /> Weather Timeline
                                 </h3>
-                                {classAttireRecommendations.map((rec, idx) => {
-                                    const isCollapsed = collapsedClasses.has(idx);
-                                    return (
-                                        <div 
-                                            key={idx} 
-                                            style={{ 
-                                                marginBottom: "15px", 
-                                                padding: "15px", 
-                                                backgroundColor: "#f9f9f9", 
-                                                border: "1px solid #ddd",
-                                                borderLeft: rec.attire.priority === "essential" ? "4px solid #d32f2f" : "4px solid #000"
-                                            }}
+                                <WeatherSummary matches={classWeatherMatches} />
+                            </GlassCard>
+
+                            {/* Class Recommendations */}
+                            <div className="space-y-4">
+                                <h3 className="text-lg font-bold text-white/60 px-2">Class-by-Class Breakdown</h3>
+                                {classAttireRecommendations.map((rec, idx) => (
+                                    <motion.div 
+                                        key={idx}
+                                        initial={{ opacity: 0, x: -20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ delay: idx * 0.1 }}
+                                    >
+                                        <GlassCard 
+                                            className={`transition-all duration-300 ${collapsedClasses.has(idx) ? 'bg-white/5' : 'bg-white/10'}`}
+                                            hover={false}
                                         >
-                                            {/* Class Header - Always Visible */}
                                             <div 
                                                 onClick={() => toggleClass(idx)}
-                                                style={{ cursor: "pointer", userSelect: "none" }}
+                                                className="cursor-pointer flex items-center justify-between"
                                             >
-                                                <h4 style={{ margin: "0 0 5px 0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                                                    <span>{rec.class.name}</span>
-                                                    <span style={{ fontSize: "14px", fontWeight: "normal" }}>
-                                                        {isCollapsed ? "▼ Show Details" : "▲ Hide Details"}
-                                                    </span>
-                                                </h4>
-                                                <p style={{ margin: "0", fontSize: "14px", color: "#666" }}>
-                                                    {rec.class.startTime} - {rec.class.endTime}
-                                                    {rec.weather && ` • ${getWeatherIcon(rec.weather.condition)} ${rec.weather.temp}°C (${getTempLabel(rec.weather.temp)})`}
-                                                </p>
-                                            </div>
-
-                                            {/* Expandable Details */}
-                                            {!isCollapsed && (
-                                                <div style={{ marginTop: "15px" }}>
-                                                    {/* Class & Weather Info */}
-                                                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", fontSize: "14px", marginBottom: "15px" }}>
-                                                        <div>
-                                                            <p style={{ margin: "5px 0" }}><strong>Location:</strong> {rec.class.location || "N/A"}</p>
-                                                        </div>
-                                                        
-                                                        {rec.weather ? (
-                                                            <div style={{ borderLeft: "2px solid #ccc", paddingLeft: "10px" }}>
-                                                                <p style={{ margin: "5px 0" }}>
-                                                                    <strong>Weather:</strong> {getWeatherIcon(rec.weather.condition)} {rec.weather.condition}
-                                                                </p>
-                                                                <p style={{ margin: "5px 0" }}>
-                                                                    <strong>Feels Like:</strong> {rec.weather.feelsLike}°C
-                                                                </p>
-                                                                <p style={{ margin: "5px 0" }}>
-                                                                    <strong>Wind:</strong> {rec.weather.windSpeed} km/h
-                                                                </p>
-                                                                <p style={{ margin: "5px 0" }}>
-                                                                    <strong>Humidity:</strong> {rec.weather.humidity}%
-                                                                </p>
-                                                            </div>
-                                                        ) : (
-                                                            <div style={{ borderLeft: "2px solid #ccc", paddingLeft: "10px" }}>
-                                                                <p style={{ margin: "5px 0", color: "#999" }}>Weather data unavailable</p>
-                                                            </div>
-                                                        )}
-                                                    </div>
-
-                                                    {/* Attire Recommendation */}
-                                                    <div style={{ 
-                                                        padding: "12px", 
-                                                        backgroundColor: rec.attire.priority === "essential" ? "#ffebee" : "#e8f5e9",
-                                                        borderRadius: "4px",
-                                                        borderLeft: rec.attire.priority === "essential" ? "3px solid #d32f2f" : "3px solid #4caf50"
-                                                    }}>
-                                                        <p style={{ margin: "0 0 8px 0", fontWeight: "bold", fontSize: "15px" }}>
-                                                            👔 Recommended Attire
-                                                            {rec.attire.priority === "essential" && <span style={{ color: "#d32f2f", marginLeft: "8px" }}>(Essential)</span>}
+                                                <div className="flex items-center gap-4">
+                                                    <div className={`w-2 h-12 rounded-full ${rec.attire.priority === 'essential' ? 'bg-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)]' : 'bg-green-500'}`} />
+                                                    <div>
+                                                        <h4 className="text-lg font-bold">{rec.class.name}</h4>
+                                                        <p className="text-sm text-white/50 font-mono">
+                                                            {rec.class.startTime} • {rec.class.location || "On Campus"}
                                                         </p>
-                                                        <p style={{ margin: "5px 0" }}>{rec.attire.recommendation}</p>
-                                                        <p style={{ margin: "5px 0", fontSize: "13px", fontStyle: "italic", color: "#666" }}>
-                                                            {rec.attire.reasoning}
-                                                        </p>
-                                                        {rec.attire.accessories.length > 0 && (
-                                                            <p style={{ margin: "8px 0 0 0", fontSize: "13px" }}>
-                                                                <strong>Bring:</strong> {rec.attire.accessories.join(", ")}
-                                                            </p>
-                                                        )}
                                                     </div>
                                                 </div>
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        )}
-                    </div>
+                                                {collapsedClasses.has(idx) ? <ChevronDown className="text-white/40" /> : <ChevronUp className="text-white/40" />}
+                                            </div>
 
-                    {/* Detailed Weather Data Section */}
-                    {classWeatherMatches.length > 0 && (
-                        <div style={{ marginTop: "50px", padding: "20px", border: "2px solid #000", backgroundColor: "#f9f9f9" }}>
-                            <h2 style={{ marginTop: 0, marginBottom: "10px" }}>📊 Detailed Weather Data</h2>
-                            <p style={{ fontSize: "14px", color: "#666", marginBottom: "20px" }}>
-                                Weather conditions throughout your class schedule. Use this data for visualization and analysis.
-                            </p>
-                            
-                            <div style={{ overflowX: "auto" }}>
-                                <table style={{ width: "100%", borderCollapse: "collapse", backgroundColor: "#fff" }}>
-                                    <thead>
-                                        <tr style={{ backgroundColor: "#000", color: "#fff" }}>
-                                            <th style={{ padding: "12px", textAlign: "left", borderBottom: "2px solid #000" }}>Time</th>
-                                            <th style={{ padding: "12px", textAlign: "left", borderBottom: "2px solid #000" }}>Class</th>
-                                            <th style={{ padding: "12px", textAlign: "left", borderBottom: "2px solid #000" }}>Temperature (°C)</th>
-                                            <th style={{ padding: "12px", textAlign: "left", borderBottom: "2px solid #000" }}>Feels Like (°C)</th>
-                                            <th style={{ padding: "12px", textAlign: "left", borderBottom: "2px solid #000" }}>Condition</th>
-                                            <th style={{ padding: "12px", textAlign: "left", borderBottom: "2px solid #000" }}>Humidity (%)</th>
-                                            <th style={{ padding: "12px", textAlign: "left", borderBottom: "2px solid #000" }}>Wind (km/h)</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {classWeatherMatches.map((match, idx) => {
-                                            const weather = match.weather;
-                                            if (!weather) return null;
-                                            
-                                            return (
-                                                <tr key={idx} style={{ borderBottom: "1px solid #ddd" }}>
-                                                    <td style={{ padding: "12px", fontWeight: "bold" }}>
-                                                        {match.class.startTime}
-                                                    </td>
-                                                    <td style={{ padding: "12px" }}>
-                                                        {match.class.name}
-                                                    </td>
-                                                    <td style={{ padding: "12px", fontWeight: "bold", color: "#d32f2f" }}>
-                                                        {weather.temp.toFixed(1)}°C
-                                                    </td>
-                                                    <td style={{ padding: "12px", color: "#666" }}>
-                                                        {weather.feelsLike.toFixed(1)}°C
-                                                    </td>
-                                                    <td style={{ padding: "12px" }}>
-                                                        <span style={{ marginRight: "5px" }}>{getWeatherIcon(weather.condition)}</span>
-                                                        {weather.condition}
-                                                    </td>
-                                                    <td style={{ padding: "12px" }}>
-                                                        {weather.humidity}%
-                                                    </td>
-                                                    <td style={{ padding: "12px" }}>
-                                                        {weather.windSpeed.toFixed(1)} km/h
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })}
-                                    </tbody>
-                                </table>
-                            </div>
+                                            <AnimatePresence>
+                                                {!collapsedClasses.has(idx) && (
+                                                    <motion.div
+                                                        initial={{ height: 0, opacity: 0 }}
+                                                        animate={{ height: "auto", opacity: 1 }}
+                                                        exit={{ height: 0, opacity: 0 }}
+                                                        className="overflow-hidden"
+                                                    >
+                                                        <div className="pt-6 pl-6 grid md:grid-cols-2 gap-8 border-t border-white/10 mt-6">
+                                                            {rec.weather && (
+                                                                <div className="space-y-3">
+                                                                    <div className="flex items-center gap-2 text-white/60 text-sm font-mono">
+                                                                        <Thermometer className="w-4 h-4" /> CONDITIONS
+                                                                    </div>
+                                                                    <div className="text-2xl font-bold">
+                                                                        {rec.weather.temp}°C
+                                                                        <span className="text-sm font-normal text-white/50 ml-2">Feels like {rec.weather.feelsLike}°</span>
+                                                                    </div>
+                                                                    <div className="grid grid-cols-2 gap-2 text-sm text-white/70">
+                                                                        <div className="flex items-center gap-2"><Wind className="w-3 h-3" /> {rec.weather.windSpeed} km/h</div>
+                                                                        <div className="flex items-center gap-2"><Droplets className="w-3 h-3" /> {rec.weather.humidity}%</div>
+                                                                    </div>
+                                                                </div>
+                                                            )}
 
-                            {/* Summary Stats */}
-                            <div style={{ marginTop: "20px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "15px" }}>
-                                <div style={{ padding: "15px", backgroundColor: "#fff", border: "1px solid #ddd" }}>
-                                    <p style={{ margin: 0, fontSize: "12px", color: "#666", textTransform: "uppercase" }}>Temperature Range</p>
-                                    <p style={{ margin: "5px 0 0 0", fontSize: "20px", fontWeight: "bold" }}>
-                                        {Math.min(...classWeatherMatches.filter(m => m.weather).map(m => m.weather!.temp)).toFixed(1)}°C - {Math.max(...classWeatherMatches.filter(m => m.weather).map(m => m.weather!.temp)).toFixed(1)}°C
-                                    </p>
-                                </div>
-                                <div style={{ padding: "15px", backgroundColor: "#fff", border: "1px solid #ddd" }}>
-                                    <p style={{ margin: 0, fontSize: "12px", color: "#666", textTransform: "uppercase" }}>Avg Temperature</p>
-                                    <p style={{ margin: "5px 0 0 0", fontSize: "20px", fontWeight: "bold" }}>
-                                        {(classWeatherMatches.filter(m => m.weather).reduce((sum, m) => sum + m.weather!.temp, 0) / classWeatherMatches.filter(m => m.weather).length).toFixed(1)}°C
-                                    </p>
-                                </div>
-                                <div style={{ padding: "15px", backgroundColor: "#fff", border: "1px solid #ddd" }}>
-                                    <p style={{ margin: 0, fontSize: "12px", color: "#666", textTransform: "uppercase" }}>Avg Humidity</p>
-                                    <p style={{ margin: "5px 0 0 0", fontSize: "20px", fontWeight: "bold" }}>
-                                        {Math.round(classWeatherMatches.filter(m => m.weather).reduce((sum, m) => sum + m.weather!.humidity, 0) / classWeatherMatches.filter(m => m.weather).length)}%
-                                    </p>
-                                </div>
-                                <div style={{ padding: "15px", backgroundColor: "#fff", border: "1px solid #ddd" }}>
-                                    <p style={{ margin: 0, fontSize: "12px", color: "#666", textTransform: "uppercase" }}>Max Wind Speed</p>
-                                    <p style={{ margin: "5px 0 0 0", fontSize: "20px", fontWeight: "bold" }}>
-                                        {Math.max(...classWeatherMatches.filter(m => m.weather).map(m => m.weather!.windSpeed)).toFixed(1)} km/h
-                                    </p>
-                                </div>
+                                                            <div className="space-y-3">
+                                                                <div className="flex items-center gap-2 text-white/60 text-sm font-mono">
+                                                                    <Shirt className="w-4 h-4" /> RECOMMENDATION
+                                                                </div>
+                                                                <p className="leading-relaxed font-medium text-blue-200">
+                                                                    {rec.attire.recommendation}
+                                                                </p>
+                                                                <p className="text-sm text-white/50 italic">
+                                                                    "{rec.attire.reasoning}"
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </motion.div>
+                                                )}
+                                            </AnimatePresence>
+                                        </GlassCard>
+                                    </motion.div>
+                                ))}
                             </div>
-
-                            {/* Export Hint */}
-                            <div style={{ marginTop: "20px", padding: "15px", backgroundColor: "#fff3cd", border: "1px solid #ffc107" }}>
-                                <p style={{ margin: 0, fontSize: "14px", color: "#856404" }}>
-                                    💡 <strong>Tip:</strong> You can copy this table data to create visualizations in tools like Excel, Google Sheets, or Python (matplotlib/plotly).
-                                </p>
-                            </div>
-                        </div>
+                        
+                        </motion.div>
                     )}
-                </div>
-            )}
+                </AnimatePresence>
 
-            <footer style={{ marginTop: "50px", fontSize: "12px", borderTop: "1px solid #ccc", paddingTop: "20px" }}>
-                Dev Mode: Engine Locked to Gemini 2.5 Flash Lite
-            </footer>
-        </div>
+                <footer className="mt-20 pt-8 border-t border-white/10 text-center text-white/30 text-xs font-mono">
+                    <p>STRATUS INTELLIGENCE ENGINE v1.0 • POWERED BY GEMINI 2.0</p>
+                </footer>
+            </div>
+        </main>
     );
 }
-
