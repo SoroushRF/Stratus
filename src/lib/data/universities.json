@@ -96,5 +96,859 @@
     "campus": "Interaction Design",
     "lat": 43.3725,
     "lng": -80.9768
+  },
+  {
+    "name": "University of Alberta (North Campus)",
+    "shortName": "UAlberta",
+    "campus": "North Campus",
+    "lat": 53.5232,
+    "lng": -113.5263
+  },
+  {
+    "name": "University of Alberta (South Campus)",
+    "shortName": "UAlberta",
+    "campus": "South Campus",
+    "lat": 53.5167,
+    "lng": -113.5211
+  },
+  {
+    "name": "University of Alberta (Augustana)",
+    "shortName": "UAlberta",
+    "campus": "Augustana",
+    "lat": 53.0167,
+    "lng": -112.8167
+  },
+  {
+    "name": "McMaster University (Main)",
+    "shortName": "McMaster",
+    "campus": "Main",
+    "lat": 43.2609,
+    "lng": -79.9192
+  },
+  {
+    "name": "Western University (Main)",
+    "shortName": "Western",
+    "campus": "Main",
+    "lat": 43.0096,
+    "lng": -81.2737
+  },
+  {
+    "name": "Queen's University (Main)",
+    "shortName": "Queen's",
+    "campus": "Main",
+    "lat": 44.2253,
+    "lng": -76.4951
+  },
+  {
+    "name": "University of Calgary (Main)",
+    "shortName": "UCalgary",
+    "campus": "Main",
+    "lat": 51.0775,
+    "lng": -114.1335
+  },
+  {
+    "name": "University of Calgary (Foothills)",
+    "shortName": "UCalgary",
+    "campus": "Foothills",
+    "lat": 51.0642,
+    "lng": -114.1335
+  },
+  {
+    "name": "University of Calgary (Spy Hill)",
+    "shortName": "UCalgary",
+    "campus": "Spy Hill",
+    "lat": 51.0447,
+    "lng": -113.9819
+  },
+  {
+    "name": "Simon Fraser University (Burnaby)",
+    "shortName": "SFU",
+    "campus": "Burnaby",
+    "lat": 49.2781,
+    "lng": -122.9199
+  },
+  {
+    "name": "Simon Fraser University (Surrey)",
+    "shortName": "SFU",
+    "campus": "Surrey",
+    "lat": 49.1867,
+    "lng": -122.8490
+  },
+  {
+    "name": "Simon Fraser University (Vancouver)",
+    "shortName": "SFU",
+    "campus": "Vancouver",
+    "lat": 49.2827,
+    "lng": -123.1207
+  },
+  {
+    "name": "University of Ottawa (Main)",
+    "shortName": "uOttawa",
+    "campus": "Main",
+    "lat": 45.4215,
+    "lng": -75.6972
+  },
+  {
+    "name": "Université de Montréal (Main)",
+    "shortName": "UdeM",
+    "campus": "Main",
+    "lat": 45.5048,
+    "lng": -73.6132
+  },
+  {
+    "name": "Université Laval (Main)",
+    "shortName": "Laval",
+    "campus": "Main",
+    "lat": 46.7787,
+    "lng": -71.2754
+  },
+  {
+    "name": "Dalhousie University (Studley)",
+    "shortName": "Dal",
+    "campus": "Studley",
+    "lat": 44.6369,
+    "lng": -63.5906
+  },
+  {
+    "name": "Dalhousie University (Carleton)",
+    "shortName": "Dal",
+    "campus": "Carleton",
+    "lat": 44.6476,
+    "lng": -63.5728
+  },
+  {
+    "name": "Dalhousie University (Sexton)",
+    "shortName": "Dal",
+    "campus": "Sexton",
+    "lat": 44.6394,
+    "lng": -63.5920
+  },
+  {
+    "name": "University of Victoria (Main)",
+    "shortName": "UVic",
+    "campus": "Main",
+    "lat": 48.4634,
+    "lng": -123.3117
+  },
+  {
+    "name": "Carleton University (Main)",
+    "shortName": "Carleton",
+    "campus": "Main",
+    "lat": 45.3875,
+    "lng": -75.6960
+  },
+  {
+    "name": "Toronto Metropolitan University (Main)",
+    "shortName": "TMU",
+    "campus": "Main",
+    "lat": 43.6577,
+    "lng": -79.3788
+  },
+  {
+    "name": "Concordia University (Sir George Williams)",
+    "shortName": "Concordia",
+    "campus": "Sir George Williams",
+    "lat": 45.4972,
+    "lng": -73.5789
+  },
+  {
+    "name": "Concordia University (Loyola)",
+    "shortName": "Concordia",
+    "campus": "Loyola",
+    "lat": 45.4581,
+    "lng": -73.6403
+  },
+  {
+    "name": "University of Manitoba (Fort Garry)",
+    "shortName": "UManitoba",
+    "campus": "Fort Garry",
+    "lat": 49.8083,
+    "lng": -97.1367
+  },
+  {
+    "name": "University of Manitoba (Bannatyne)",
+    "shortName": "UManitoba",
+    "campus": "Bannatyne",
+    "lat": 49.8951,
+    "lng": -97.1384
+  },
+  {
+    "name": "University of Saskatchewan (Main)",
+    "shortName": "USask",
+    "campus": "Main",
+    "lat": 52.1319,
+    "lng": -106.6336
+  },
+  {
+    "name": "Memorial University (St. John's)",
+    "shortName": "MUN",
+    "campus": "St. John's",
+    "lat": 47.5742,
+    "lng": -52.7356
+  },
+  {
+    "name": "Memorial University (Grenfell)",
+    "shortName": "MUN",
+    "campus": "Grenfell",
+    "lat": 48.9561,
+    "lng": -57.9542
+  },
+  {
+    "name": "University of Guelph (Main)",
+    "shortName": "Guelph",
+    "campus": "Main",
+    "lat": 43.5320,
+    "lng": -80.2259
+  },
+  {
+    "name": "Wilfrid Laurier University (Waterloo)",
+    "shortName": "Laurier",
+    "campus": "Waterloo",
+    "lat": 43.4738,
+    "lng": -80.5265
+  },
+  {
+    "name": "Wilfrid Laurier University (Brantford)",
+    "shortName": "Laurier",
+    "campus": "Brantford",
+    "lat": 43.1394,
+    "lng": -80.2644
+  },
+  {
+    "name": "Wilfrid Laurier University (Kitchener)",
+    "shortName": "Laurier",
+    "campus": "Kitchener",
+    "lat": 43.4516,
+    "lng": -80.4925
+  },
+  {
+    "name": "University of Windsor (Main)",
+    "shortName": "Windsor",
+    "campus": "Main",
+    "lat": 42.3082,
+    "lng": -83.0654
+  },
+  {
+    "name": "Brock University (Main)",
+    "shortName": "Brock",
+    "campus": "Main",
+    "lat": 43.1175,
+    "lng": -79.2478
+  },
+  {
+    "name": "Lakehead University (Thunder Bay)",
+    "shortName": "Lakehead",
+    "campus": "Thunder Bay",
+    "lat": 48.4329,
+    "lng": -89.2584
+  },
+  {
+    "name": "Lakehead University (Orillia)",
+    "shortName": "Lakehead",
+    "campus": "Orillia",
+    "lat": 44.6085,
+    "lng": -79.4197
+  },
+  {
+    "name": "Laurentian University (Main)",
+    "shortName": "Laurentian",
+    "campus": "Main",
+    "lat": 46.4917,
+    "lng": -80.9936
+  },
+  {
+    "name": "Nipissing University (North Bay)",
+    "shortName": "Nipissing",
+    "campus": "North Bay",
+    "lat": 46.3091,
+    "lng": -79.4608
+  },
+  {
+    "name": "Trent University (Peterborough)",
+    "shortName": "Trent",
+    "campus": "Peterborough",
+    "lat": 44.3617,
+    "lng": -78.2900
+  },
+  {
+    "name": "Trent University (Durham)",
+    "shortName": "Trent",
+    "campus": "Durham",
+    "lat": 43.9445,
+    "lng": -78.8964
+  },
+  {
+    "name": "Ontario Tech University (Main)",
+    "shortName": "Ontario Tech",
+    "campus": "Main",
+    "lat": 43.9450,
+    "lng": -78.8967
+  },
+  {
+    "name": "University of Regina (Main)",
+    "shortName": "Regina",
+    "campus": "Main",
+    "lat": 50.4452,
+    "lng": -104.6189
+  },
+  {
+    "name": "University of Lethbridge (Main)",
+    "shortName": "Lethbridge",
+    "campus": "Main",
+    "lat": 49.6786,
+    "lng": -112.8644
+  },
+  {
+    "name": "University of Lethbridge (Calgary)",
+    "shortName": "Lethbridge",
+    "campus": "Calgary",
+    "lat": 51.0447,
+    "lng": -114.0719
+  },
+  {
+    "name": "Mount Allison University (Main)",
+    "shortName": "Mount Allison",
+    "campus": "Main",
+    "lat": 45.9036,
+    "lng": -64.4779
+  },
+  {
+    "name": "Acadia University (Main)",
+    "shortName": "Acadia",
+    "campus": "Main",
+    "lat": 45.0878,
+    "lng": -64.3636
+  },
+  {
+    "name": "St. Francis Xavier University (Main)",
+    "shortName": "StFX",
+    "campus": "Main",
+    "lat": 45.6167,
+    "lng": -62.0167
+  },
+  {
+    "name": "University of New Brunswick (Fredericton)",
+    "shortName": "UNB",
+    "campus": "Fredericton",
+    "lat": 45.9478,
+    "lng": -66.6408
+  },
+  {
+    "name": "University of New Brunswick (Saint John)",
+    "shortName": "UNB",
+    "campus": "Saint John",
+    "lat": 45.2733,
+    "lng": -66.0633
+  },
+  {
+    "name": "University of Prince Edward Island (Main)",
+    "shortName": "UPEI",
+    "campus": "Main",
+    "lat": 46.2382,
+    "lng": -63.1311
+  },
+  {
+    "name": "Brandon University (Main)",
+    "shortName": "Brandon",
+    "campus": "Main",
+    "lat": 49.8483,
+    "lng": -99.9517
+  },
+  {
+    "name": "University of Winnipeg (Main)",
+    "shortName": "UWinnipeg",
+    "campus": "Main",
+    "lat": 49.8833,
+    "lng": -97.1500
+  },
+  {
+    "name": "University of Northern British Columbia (Prince George)",
+    "shortName": "UNBC",
+    "campus": "Prince George",
+    "lat": 53.9171,
+    "lng": -122.7497
+  },
+  {
+    "name": "Thompson Rivers University (Kamloops)",
+    "shortName": "TRU",
+    "campus": "Kamloops",
+    "lat": 50.6745,
+    "lng": -120.3273
+  },
+  {
+    "name": "Vancouver Island University (Nanaimo)",
+    "shortName": "VIU",
+    "campus": "Nanaimo",
+    "lat": 49.1642,
+    "lng": -123.9364
+  },
+  {
+    "name": "University of the Fraser Valley (Abbotsford)",
+    "shortName": "UFV",
+    "campus": "Abbotsford",
+    "lat": 49.0504,
+    "lng": -122.2861
+  },
+  {
+    "name": "University of the Fraser Valley (Chilliwack)",
+    "shortName": "UFV",
+    "campus": "Chilliwack",
+    "lat": 49.1577,
+    "lng": -121.9509
+  },
+  {
+    "name": "Kwantlen Polytechnic University (Surrey)",
+    "shortName": "KPU",
+    "campus": "Surrey",
+    "lat": 49.1913,
+    "lng": -122.8490
+  },
+  {
+    "name": "Kwantlen Polytechnic University (Richmond)",
+    "shortName": "KPU",
+    "campus": "Richmond",
+    "lat": 49.1666,
+    "lng": -123.1336
+  },
+  {
+    "name": "Kwantlen Polytechnic University (Langley)",
+    "shortName": "KPU",
+    "campus": "Langley",
+    "lat": 49.1044,
+    "lng": -122.5794
+  },
+  {
+    "name": "Kwantlen Polytechnic University (Cloverdale)",
+    "shortName": "KPU",
+    "campus": "Cloverdale",
+    "lat": 49.1059,
+    "lng": -122.7289
+  },
+  {
+    "name": "Emily Carr University (Main)",
+    "shortName": "Emily Carr",
+    "campus": "Main",
+    "lat": 49.2659,
+    "lng": -123.1114
+  },
+  {
+    "name": "OCAD University (Main)",
+    "shortName": "OCAD",
+    "campus": "Main",
+    "lat": 43.6532,
+    "lng": -79.3915
+  },
+  {
+    "name": "NSCAD University (Main)",
+    "shortName": "NSCAD",
+    "campus": "Main",
+    "lat": 44.6488,
+    "lng": -63.5752
+  },
+  {
+    "name": "Université de Sherbrooke (Main)",
+    "shortName": "Sherbrooke",
+    "campus": "Main",
+    "lat": 45.3781,
+    "lng": -71.9279
+  },
+  {
+    "name": "Université de Sherbrooke (Longueuil)",
+    "shortName": "Sherbrooke",
+    "campus": "Longueuil",
+    "lat": 45.5317,
+    "lng": -73.5186
+  },
+  {
+    "name": "Université du Québec à Montréal (Main)",
+    "shortName": "UQAM",
+    "campus": "Main",
+    "lat": 45.5088,
+    "lng": -73.5673
+  },
+  {
+    "name": "Université du Québec à Trois-Rivières (Main)",
+    "shortName": "UQTR",
+    "campus": "Main",
+    "lat": 46.3500,
+    "lng": -72.5500
+  },
+  {
+    "name": "Université du Québec à Chicoutimi (Main)",
+    "shortName": "UQAC",
+    "campus": "Main",
+    "lat": 48.4167,
+    "lng": -71.0500
+  },
+  {
+    "name": "Université du Québec en Outaouais (Gatineau)",
+    "shortName": "UQO",
+    "campus": "Gatineau",
+    "lat": 45.4765,
+    "lng": -75.7013
+  },
+  {
+    "name": "Université du Québec en Outaouais (Saint-Jérôme)",
+    "shortName": "UQO",
+    "campus": "Saint-Jérôme",
+    "lat": 45.7833,
+    "lng": -74.0000
+  },
+  {
+    "name": "Université du Québec en Abitibi-Témiscamingue (Rouyn-Noranda)",
+    "shortName": "UQAT",
+    "campus": "Rouyn-Noranda",
+    "lat": 48.2333,
+    "lng": -79.0167
+  },
+  {
+    "name": "Université du Québec à Rimouski (Rimouski)",
+    "shortName": "UQAR",
+    "campus": "Rimouski",
+    "lat": 48.4500,
+    "lng": -68.5167
+  },
+  {
+    "name": "Université du Québec à Rimouski (Lévis)",
+    "shortName": "UQAR",
+    "campus": "Lévis",
+    "lat": 46.8000,
+    "lng": -71.1833
+  },
+  {
+    "name": "Bishop's University (Main)",
+    "shortName": "Bishop's",
+    "campus": "Main",
+    "lat": 45.3667,
+    "lng": -71.8500
+  },
+  {
+    "name": "Mount Royal University (Main)",
+    "shortName": "MRU",
+    "campus": "Main",
+    "lat": 51.0103,
+    "lng": -114.1308
+  },
+  {
+    "name": "MacEwan University (Main)",
+    "shortName": "MacEwan",
+    "campus": "Main",
+    "lat": 53.5461,
+    "lng": -113.5053
+  },
+  {
+    "name": "Athabasca University (Athabasca)",
+    "shortName": "Athabasca",
+    "campus": "Athabasca",
+    "lat": 54.7208,
+    "lng": -113.2881
+  },
+  {
+    "name": "Royal Roads University (Main)",
+    "shortName": "Royal Roads",
+    "campus": "Main",
+    "lat": 48.4333,
+    "lng": -123.4667
+  },
+  {
+    "name": "Cape Breton University (Main)",
+    "shortName": "CBU",
+    "campus": "Main",
+    "lat": 46.1389,
+    "lng": -60.1917
+  },
+  {
+    "name": "Saint Mary's University (Main)",
+    "shortName": "SMU",
+    "campus": "Main",
+    "lat": 44.6333,
+    "lng": -63.5833
+  },
+  {
+    "name": "Mount Saint Vincent University (Main)",
+    "shortName": "MSVU",
+    "campus": "Main",
+    "lat": 44.6667,
+    "lng": -63.6167
+  },
+  {
+    "name": "St. Thomas University (Main)",
+    "shortName": "STU",
+    "campus": "Main",
+    "lat": 45.9500,
+    "lng": -66.6333
+  },
+  {
+    "name": "Université de Moncton (Moncton)",
+    "shortName": "Moncton",
+    "campus": "Moncton",
+    "lat": 46.1000,
+    "lng": -64.7833
+  },
+  {
+    "name": "Université de Moncton (Edmundston)",
+    "shortName": "Moncton",
+    "campus": "Edmundston",
+    "lat": 47.3667,
+    "lng": -68.3333
+  },
+  {
+    "name": "Université de Moncton (Shippagan)",
+    "shortName": "Moncton",
+    "campus": "Shippagan",
+    "lat": 47.7333,
+    "lng": -64.7000
+  },
+  {
+    "name": "Algoma University (Sault Ste. Marie)",
+    "shortName": "Algoma",
+    "campus": "Sault Ste. Marie",
+    "lat": 46.5167,
+    "lng": -84.3333
+  },
+  {
+    "name": "Algoma University (Brampton)",
+    "shortName": "Algoma",
+    "campus": "Brampton",
+    "lat": 43.7315,
+    "lng": -79.7624
+  },
+  {
+    "name": "Huron University College (Main)",
+    "shortName": "Huron",
+    "campus": "Main",
+    "lat": 43.0096,
+    "lng": -81.2737
+  },
+  {
+    "name": "King's University College (Main)",
+    "shortName": "King's",
+    "campus": "Main",
+    "lat": 43.0096,
+    "lng": -81.2737
+  },
+  {
+    "name": "Brescia University College (Main)",
+    "shortName": "Brescia",
+    "campus": "Main",
+    "lat": 43.0096,
+    "lng": -81.2737
+  },
+  {
+    "name": "Redeemer University (Main)",
+    "shortName": "Redeemer",
+    "campus": "Main",
+    "lat": 43.1667,
+    "lng": -79.7833
+  },
+  {
+    "name": "Trinity Western University (Langley)",
+    "shortName": "TWU",
+    "campus": "Langley",
+    "lat": 49.0500,
+    "lng": -122.6167
+  },
+  {
+    "name": "Quest University (Squamish)",
+    "shortName": "Quest",
+    "campus": "Squamish",
+    "lat": 50.1167,
+    "lng": -122.9500
+  },
+  {
+    "name": "University Canada West (Vancouver)",
+    "shortName": "UCW",
+    "campus": "Vancouver",
+    "lat": 49.2827,
+    "lng": -123.1207
+  },
+  {
+    "name": "Crandall University (Moncton)",
+    "shortName": "Crandall",
+    "campus": "Moncton",
+    "lat": 46.0878,
+    "lng": -64.7782
+  },
+  {
+    "name": "Seneca College (Newnham)",
+    "shortName": "Seneca",
+    "campus": "Newnham",
+    "lat": 43.7963,
+    "lng": -79.3486
+  },
+  {
+    "name": "Seneca College (King)",
+    "shortName": "Seneca",
+    "campus": "King",
+    "lat": 43.9275,
+    "lng": -79.5342
+  },
+  {
+    "name": "Seneca College (Markham)",
+    "shortName": "Seneca",
+    "campus": "Markham",
+    "lat": 43.8561,
+    "lng": -79.3370
+  },
+  {
+    "name": "Humber College (North)",
+    "shortName": "Humber",
+    "campus": "North",
+    "lat": 43.7284,
+    "lng": -79.6076
+  },
+  {
+    "name": "Humber College (Lakeshore)",
+    "shortName": "Humber",
+    "campus": "Lakeshore",
+    "lat": 43.6167,
+    "lng": -79.4833
+  },
+  {
+    "name": "George Brown College (St. James)",
+    "shortName": "George Brown",
+    "campus": "St. James",
+    "lat": 43.6761,
+    "lng": -79.4106
+  },
+  {
+    "name": "George Brown College (Casa Loma)",
+    "shortName": "George Brown",
+    "campus": "Casa Loma",
+    "lat": 43.6744,
+    "lng": -79.4119
+  },
+  {
+    "name": "George Brown College (Waterfront)",
+    "shortName": "George Brown",
+    "campus": "Waterfront",
+    "lat": 43.6386,
+    "lng": -79.3636
+  },
+  {
+    "name": "Sheridan College (Trafalgar)",
+    "shortName": "Sheridan",
+    "campus": "Trafalgar",
+    "lat": 43.4516,
+    "lng": -79.7011
+  },
+  {
+    "name": "Sheridan College (Davis)",
+    "shortName": "Sheridan",
+    "campus": "Davis",
+    "lat": 43.5890,
+    "lng": -79.6441
+  },
+  {
+    "name": "Sheridan College (Hazel McCallion)",
+    "shortName": "Sheridan",
+    "campus": "Hazel McCallion",
+    "lat": 43.5890,
+    "lng": -79.6441
+  },
+  {
+    "name": "Centennial College (Progress)",
+    "shortName": "Centennial",
+    "campus": "Progress",
+    "lat": 43.7854,
+    "lng": -79.2306
+  },
+  {
+    "name": "Centennial College (Ashtonbee)",
+    "shortName": "Centennial",
+    "campus": "Ashtonbee",
+    "lat": 43.7333,
+    "lng": -79.2333
+  },
+  {
+    "name": "Centennial College (Morningside)",
+    "shortName": "Centennial",
+    "campus": "Morningside",
+    "lat": 43.7854,
+    "lng": -79.1950
+  },
+  {
+    "name": "Algonquin College (Woodroffe)",
+    "shortName": "Algonquin",
+    "campus": "Woodroffe",
+    "lat": 45.3489,
+    "lng": -75.7537
+  },
+  {
+    "name": "Algonquin College (Pembroke)",
+    "shortName": "Algonquin",
+    "campus": "Pembroke",
+    "lat": 45.8167,
+    "lng": -77.1000
+  },
+  {
+    "name": "Algonquin College (Perth)",
+    "shortName": "Algonquin",
+    "campus": "Perth",
+    "lat": 44.9000,
+    "lng": -76.2500
+  },
+  {
+    "name": "British Columbia Institute of Technology (Burnaby)",
+    "shortName": "BCIT",
+    "campus": "Burnaby",
+    "lat": 49.2497,
+    "lng": -123.0016
+  },
+  {
+    "name": "British Columbia Institute of Technology (Downtown Vancouver)",
+    "shortName": "BCIT",
+    "campus": "Downtown Vancouver",
+    "lat": 49.2827,
+    "lng": -123.1207
+  },
+  {
+    "name": "British Columbia Institute of Technology (Aerospace)",
+    "shortName": "BCIT",
+    "campus": "Aerospace",
+    "lat": 49.1951,
+    "lng": -123.1820
+  },
+  {
+    "name": "Southern Alberta Institute of Technology (Main)",
+    "shortName": "SAIT",
+    "campus": "Main",
+    "lat": 51.0644,
+    "lng": -114.0853
+  },
+  {
+    "name": "Northern Alberta Institute of Technology (Main)",
+    "shortName": "NAIT",
+    "campus": "Main",
+    "lat": 53.5673,
+    "lng": -113.5089
+  },
+  {
+    "name": "Northern Alberta Institute of Technology (Souch)",
+    "shortName": "NAIT",
+    "campus": "Souch",
+    "lat": 53.5167,
+    "lng": -113.6167
+  },
+  {
+    "name": "Conestoga College (Doon)",
+    "shortName": "Conestoga",
+    "campus": "Doon",
+    "lat": 43.4167,
+    "lng": -80.4667
+  },
+  {
+    "name": "Conestoga College (Waterloo)",
+    "shortName": "Conestoga",
+    "campus": "Waterloo",
+    "lat": 43.4643,
+    "lng": -80.5204
+  },
+  {
+    "name": "Conestoga College (Guelph)",
+    "shortName": "Conestoga",
+    "campus": "Guelph",
+    "lat": 43.5448,
+    "lng": -80.2482
   }
 ]
