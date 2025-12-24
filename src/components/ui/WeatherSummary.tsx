@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { ClassWeatherMatch } from "@/lib/utils/weatherMatcher";
-import { Cloud, Sparkles, Droplets, Plus } from "lucide-react";
+import { Cloud, Sparkles, Droplets, Plus, Sun, Snowflake } from "lucide-react";
 
 interface WeatherSummaryProps {
     matches: ClassWeatherMatch[];
@@ -19,9 +19,10 @@ export default function WeatherSummary({ matches }: WeatherSummaryProps) {
 
     const getWeatherIcon = (condition: string) => {
         const c = condition.toLowerCase();
-        if (c.includes("clear") || c.includes("sun")) return <Sparkles className="w-4 h-4 text-yellow-400" />;
-        if (c.includes("cloud")) return <Cloud className="w-4 h-4 text-gray-400" />;
-        if (c.includes("rain") || c.includes("drizzle")) return <Droplets className="w-4 h-4 text-blue-400" />;
+        if (c.includes("clear") || c.includes("sun")) return <Sun className="w-4 h-4 text-yellow-400 fill-yellow-400" />;
+        if (c.includes("snow") || c.includes("flurries")) return <Snowflake className="w-4 h-4 text-cyan-200" />;
+        if (c.includes("cloud") || c.includes("overcast")) return <Cloud className="w-4 h-4 text-gray-400" />;
+        if (c.includes("rain") || c.includes("drizzle") || c.includes("shower") || c.includes("thunder")) return <Droplets className="w-4 h-4 text-blue-400 fill-current" />;
         return <Cloud className="w-4 h-4 text-blue-300" />;
     };
 
