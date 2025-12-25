@@ -8,10 +8,16 @@ export async function GET(request: NextRequest) {
   if (auth0Route === 'login') {
     const domain = process.env.AUTH0_DOMAIN;
     const clientId = process.env.AUTH0_CLIENT_ID;
-    const redirectUri = `${process.env.APP_BASE_URL}/api/auth/callback`;
+    
+    // Dynamically determine the base URL from the request
+    const protocol = request.headers.get('x-forwarded-proto') || 'http';
+    const host = request.headers.get('x-forwarded-host') || request.headers.get('host') || 'localhost:3000';
+    const baseUrl = `${protocol}://${host}`;
+    const redirectUri = `${baseUrl}/api/auth/callback`;
     
     console.log('Auth0 Login - Domain:', domain);
     console.log('Auth0 Login - Client ID:', clientId);
+    console.log('Auth0 Login - Base URL:', baseUrl);
     console.log('Auth0 Login - Redirect URI:', redirectUri);
     
     const authUrl = `https://${domain}/authorize?` +
@@ -29,8 +35,13 @@ export async function GET(request: NextRequest) {
   if (auth0Route === 'callback') {
     const code = searchParams.get('code');
     
+    // Dynamically determine the base URL from the request
+    const protocol = request.headers.get('x-forwarded-proto') || 'http';
+    const host = request.headers.get('x-forwarded-host') || request.headers.get('host') || 'localhost:3000';
+    const baseUrl = `${protocol}://${host}`;
+    
     if (!code) {
-      return NextResponse.redirect(`${process.env.APP_BASE_URL}?error=no_code`);
+      return NextResponse.redirect(`${baseUrl}?error=no_code`);
     }
 
     // Exchange code for tokens
@@ -42,14 +53,14 @@ export async function GET(request: NextRequest) {
         client_id: process.env.AUTH0_CLIENT_ID,
         client_secret: process.env.AUTH0_CLIENT_SECRET,
         code,
-        redirect_uri: `${process.env.APP_BASE_URL}/api/auth/callback`,
+        redirect_uri: `${baseUrl}/api/auth/callback`,
       }),
     });
 
     const tokens = await tokenResponse.json();
     
     // Set session cookie and redirect
-    const response = NextResponse.redirect(process.env.APP_BASE_URL!);
+    const response = NextResponse.redirect(baseUrl);
     response.cookies.set('auth0_session', JSON.stringify(tokens), {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
