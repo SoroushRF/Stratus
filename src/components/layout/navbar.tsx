@@ -2,11 +2,10 @@
 
 import Link from "next/link";
 import { Cloud, User, LogIn, LogOut } from "lucide-react";
-// @ts-ignore - Auth0 SDK types may not be fully recognized
-import { useUser } from '@auth0/nextjs-auth0/client';
+import { useAuth } from '@/hooks/useAuth';
 
 export function Navbar() {
-    const { user, isLoading } = useUser();
+    const { user, isLoading, logout } = useAuth();
 
     return (
         <header className="sticky top-0 z-50 w-full glass-border bg-background/60 backdrop-blur-md">
@@ -48,13 +47,13 @@ export function Navbar() {
                                 <button className="flex h-10 w-10 items-center justify-center rounded-full glass hover:bg-white/10 transition-all">
                                     <User className="h-5 w-5 text-muted-foreground" />
                                 </button>
-                                <Link 
-                                    href="/api/auth/logout"
+                                <button 
+                                    onClick={logout}
                                     className="flex items-center gap-2 px-4 py-2 rounded-lg glass hover:bg-white/10 transition-all text-sm font-medium"
                                 >
                                     <LogOut className="h-4 w-4" />
                                     <span className="hidden md:inline">Logout</span>
-                                </Link>
+                                </button>
                             </div>
                         </div>
                     ) : (

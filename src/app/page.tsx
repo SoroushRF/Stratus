@@ -2,8 +2,7 @@
 "use client";
 
 import { useState } from "react";
-// @ts-ignore - Auth0 SDK types may not be fully recognized
-import { useUser } from '@auth0/nextjs-auth0/client';
+import { useAuth } from '@/hooks/useAuth';
 import { processSchedule, getWeatherForecastAction, generateAttireRecommendationsAction, generateMasterRecommendationAction } from "@/app/actions";
 import { ParsedClass, University, ClassAttireRecommendation, MasterRecommendation } from "@/types";
 import universitiesData from "@/lib/data/universities.json";
@@ -23,7 +22,7 @@ import WeatherSummary from "@/components/ui/WeatherSummary";
 const universities = universitiesData as University[];
 
 export default function Home() {
-    const { user, isLoading: authLoading } = useUser();
+    const { user, isLoading: authLoading } = useAuth();
     const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
     const [loadingStep, setLoadingStep] = useState<string>("");
     const [classes, setClasses] = useState<ParsedClass[]>([]);

@@ -62,8 +62,19 @@ export async function GET(request: NextRequest) {
 
   // Handle logout
   if (auth0Route === 'logout') {
-    const response = NextResponse.redirect(process.env.APP_BASE_URL!);
-    response.cookies.delete('auth0_session');
+    console.log('🚪 Logging out...');
+    const response = NextResponse.json({ success: true });
+    
+    // Delete the session cookie by setting it to expire
+    response.cookies.set('auth0_session', '', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 0, // Expire immediately
+      expires: new Date(0), // Set to past date
+    });
+    
+    console.log('✅ Session cookie cleared');
     return response;
   }
 
