@@ -43,7 +43,7 @@ export default function FileUpload({ onFileSelect, uploadedFileName, disabled = 
             onDrop={handleDrop}
             whileHover={!disabled ? { scale: 1.01 } : {}}
             className={`relative border-2 border-dashed rounded-2xl p-8 text-center transition-all ${isDragging ? "border-primary bg-primary/10" : "border-white/20 bg-white/5"
-                } ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"} backdrop-blur-xl`}
+                } ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"} backdrop-blur-sm`}
         >
             <input
                 type="file"
