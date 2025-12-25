@@ -21,15 +21,6 @@ export function Navbar() {
                     </Link>
                 </div>
 
-                <nav className="hidden md:flex items-center gap-8">
-                    <Link href="/dashboard" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
-                        Live Dashboard
-                    </Link>
-                    <Link href="/" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
-                        Upload Schedule
-                    </Link>
-                </nav>
-
                 <div className="flex items-center gap-4">
                     {isLoading ? (
                         <div className="h-10 w-10 rounded-full glass animate-pulse" />
