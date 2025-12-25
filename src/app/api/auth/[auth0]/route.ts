@@ -24,7 +24,8 @@ export async function GET(request: NextRequest) {
       `response_type=code&` +
       `client_id=${clientId}&` +
       `redirect_uri=${encodeURIComponent(redirectUri)}&` +
-      `scope=openid profile email`;
+      `scope=openid profile email&` +
+      `prompt=login`; // Force login screen every time
     
     console.log('Auth0 Login - Full Auth URL:', authUrl);
     

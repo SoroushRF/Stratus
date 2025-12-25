@@ -29,7 +29,7 @@ export default function PremiumBackground({ weatherCondition = "clear" }: Premiu
                     repeat: Infinity,
                     ease: "easeInOut",
                 }}
-                className="absolute -top-[10%] -left-[10%] w-[50%] h-[50%] bg-sky-500/20 rounded-full blur-[120px]"
+                className="absolute -top-[10%] -left-[10%] w-[50%] h-[50%] bg-sky-500/20 rounded-full blur-[60px]"
             />
             <motion.div
                 animate={{
@@ -42,7 +42,7 @@ export default function PremiumBackground({ weatherCondition = "clear" }: Premiu
                     ease: "easeInOut",
                     delay: 2,
                 }}
-                className="absolute bottom-0 right-0 w-[60%] h-[60%] bg-blue-600/10 rounded-full blur-[150px]"
+                className="absolute bottom-0 right-0 w-[60%] h-[60%] bg-blue-600/10 rounded-full blur-[80px]"
             />
 
             {/* Sunny Golden Orb - Reacts to weather */}
@@ -56,7 +56,7 @@ export default function PremiumBackground({ weatherCondition = "clear" }: Premiu
                     repeat: Infinity,
                     ease: "easeInOut",
                 }}
-                className="absolute -top-[10%] -right-[10%] w-[30%] h-[30%] bg-gradient-to-br from-yellow-300/40 via-orange-300/30 to-amber-400/20 rounded-full blur-[100px]"
+                className="absolute -top-[10%] -right-[10%] w-[30%] h-[30%] bg-gradient-to-br from-yellow-300/40 via-orange-300/30 to-amber-400/20 rounded-full blur-[50px]"
             />
 
             {/* Additional sun glow layer */}
@@ -71,7 +71,7 @@ export default function PremiumBackground({ weatherCondition = "clear" }: Premiu
                     ease: "easeInOut",
                     delay: 0.5,
                 }}
-                className="absolute -top-[2%] right-[0%] w-[18%] h-[18%] bg-yellow-200/30 rounded-full blur-[80px]"
+                className="absolute -top-[2%] right-[0%] w-[18%] h-[18%] bg-yellow-200/30 rounded-full blur-[40px]"
             />
 
             {/* Noise Texture for atmospheric depth */}

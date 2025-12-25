@@ -431,7 +431,7 @@ export default function Home() {
                             className="space-y-8"
                         >
                             {/* Actions Header */}
-                            <div className="flex justify-between items-center bg-white/5 p-4 rounded-2xl backdrop-blur-md border border-white/10">
+                            <div className="flex justify-between items-center bg-white/5 p-4 rounded-2xl backdrop-blur-sm border border-white/10">
                                 <div>
                                     <h2 className="text-2xl font-bold">{getSelectedUniversityData()?.name || "Unknown Campus"}</h2>
                                     <p className="text-white/50 text-sm">
