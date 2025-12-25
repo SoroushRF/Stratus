@@ -386,43 +386,20 @@ export default function Home() {
                                 transition={{ delay: 0.4 }}
                                 className="pt-4"
                             >
-                                {!user && !authLoading ? (
-                                    <GlassCard className="text-center py-8">
-                                        <div className="flex flex-col items-center gap-4">
-                                            <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center">
-                                                <LogIn className="w-8 h-8 text-primary" />
-                                            </div>
-                                            <div>
-                                                <h3 className="text-xl font-bold mb-2">Login Required</h3>
-                                                <p className="text-white/60 mb-4">
-                                                    Sign in to analyze your schedule and get personalized attire recommendations
-                                                </p>
-                                            </div>
-                                            <a
-                                                href="/api/auth/login"
-                                                className="px-8 py-3 bg-primary hover:bg-primary/80 rounded-xl font-semibold transition-all shadow-[0_0_20px_rgba(139,92,246,0.3)] flex items-center gap-2"
-                                            >
-                                                <LogIn className="w-5 h-5" />
-                                                Login to Continue
-                                            </a>
-                                        </div>
-                                    </GlassCard>
-                                ) : (
-                                    <AnimatedButton
-                                        onClick={handleAnalyze}
-                                        disabled={status === "loading" || !getSelectedUniversityData() || !uploadedFile || authLoading}
-                                        className="w-full text-lg py-4 shadow-2xl"
-                                    >
-                                        {status === "loading" ? (
-                                            <span className="flex items-center justify-center gap-3">
-                                                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                                {loadingStep || "Analyzing..."}
-                                            </span>
-                                        ) : (
-                                            "🚀 Analyze Schedule"
-                                        )}
-                                    </AnimatedButton>
-                                )}
+                                <AnimatedButton
+                                    onClick={handleAnalyze}
+                                    disabled={status === "loading" || !getSelectedUniversityData() || !uploadedFile}
+                                    className="w-full text-lg py-4 shadow-2xl"
+                                >
+                                    {status === "loading" ? (
+                                        <span className="flex items-center justify-center gap-3">
+                                            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                            {loadingStep || "Analyzing..."}
+                                        </span>
+                                    ) : (
+                                        "🚀 Analyze Schedule"
+                                    )}
+                                </AnimatedButton>
                             </motion.div>
 
                             {/* Error Message */}
