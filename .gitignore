@@ -20,6 +20,16 @@ dist/
 .env.*.local
 *.pem
 
+# Auth0 / Authentication (NEVER COMMIT)
+.auth0/
+auth0.json
+.auth0.json
+auth_config.json
+.auth_config.json
+.auth0.secrets
+auth0_secrets
+auth0_secrets.*
+
 # Debug / Logs
 npm-debug.log*
 yarn-debug.log*
