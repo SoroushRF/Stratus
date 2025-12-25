@@ -1,7 +1,7 @@
 // Final Integration Build [11:43 PM]
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from '@/hooks/useAuth';
 import { processSchedule, getWeatherForecastAction, generateAttireRecommendationsAction, generateMasterRecommendationAction } from "@/app/actions";
 import { ParsedClass, University, ClassAttireRecommendation, MasterRecommendation } from "@/types";
@@ -39,6 +39,95 @@ export default function Home() {
     const [selectedDay, setSelectedDay] = useState<string>("today");
     const [error, setError] = useState<string | null>(null);
     const [uploadedFile, setUploadedFile] = useState<{ base64: string; mimeType: string; name: string } | null>(null);
+    const [dataLoaded, setDataLoaded] = useState(false); // Track if we've loaded saved data
+
+    // Auto-load saved data when user logs in
+    useEffect(() => {
+        if (user && !authLoading && !dataLoaded) {
+            loadSavedData();
+        }
+    }, [user, authLoading, dataLoaded]);
+
+    // Auto-save profile when university or campus changes
+    useEffect(() => {
+        if (user && selectedUniversity && selectedCampus && dataLoaded) {
+            saveProfile();
+        }
+    }, [selectedUniversity, selectedCampus, user, dataLoaded]);
+
+    // Auto-save schedule when classes change
+    useEffect(() => {
+        if (user && classes.length > 0 && uploadedFile && dataLoaded) {
+            saveSchedule();
+        }
+    }, [classes, user, dataLoaded]);
+
+    const loadSavedData = async () => {
+        try {
+            // Load profile
+            const profileRes = await fetch('/api/user/profile');
+            if (profileRes.ok) {
+                const { profile } = await profileRes.json();
+                if (profile) {
+                    setSelectedUniversity(profile.university);
+                    setSelectedCampus(profile.campus);
+                    console.log('✅ Loaded saved profile:', profile);
+                }
+            }
+
+            // Load schedule
+            const scheduleRes = await fetch('/api/user/schedule');
+            if (scheduleRes.ok) {
+                const { schedule } = await scheduleRes.json();
+                if (schedule) {
+                    setClasses(schedule.parsed_classes);
+                    setUploadedFile({
+                        base64: '',
+                        mimeType: '',
+                        name: schedule.file_name,
+                    });
+                    console.log('✅ Loaded saved schedule:', schedule.file_name);
+                }
+            }
+
+            setDataLoaded(true);
+        } catch (err) {
+            console.error('Error loading saved data:', err);
+            setDataLoaded(true); // Still mark as loaded to prevent infinite loop
+        }
+    };
+
+    const saveProfile = async () => {
+        try {
+            await fetch('/api/user/profile', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    university: selectedUniversity,
+                    campus: selectedCampus,
+                }),
+            });
+            console.log('💾 Saved profile');
+        } catch (err) {
+            console.error('Error saving profile:', err);
+        }
+    };
+
+    const saveSchedule = async () => {
+        try {
+            await fetch('/api/user/schedule', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    fileName: uploadedFile!.name,
+                    parsedClasses: classes,
+                }),
+            });
+            console.log('💾 Saved schedule');
+        } catch (err) {
+            console.error('Error saving schedule:', err);
+        }
+    };
 
     // Get unique university names (grouped by shortName)
     const getUniversityNames = () => {
