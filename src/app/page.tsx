@@ -1,14 +1,15 @@
-// Final Integration Build [11:26 PM]
+// Final Integration Build [11:43 PM]
 "use client";
 
 import { useState } from "react";
+import { useAuth } from '@/hooks/useAuth';
 import { processSchedule, getWeatherForecastAction, generateAttireRecommendationsAction, generateMasterRecommendationAction } from "@/app/actions";
 import { ParsedClass, University, ClassAttireRecommendation, MasterRecommendation } from "@/types";
 import universitiesData from "@/lib/data/universities.json";
 import { matchClassesToWeather, filterClassesByDay, ClassWeatherMatch } from "@/lib/utils/weatherMatcher";
 import { resolveAnalysisDay, getDateForAnalysisDay } from "@/lib/utils/dateHelpers";
 import { motion, AnimatePresence } from "framer-motion";
-import { Cloud, Sparkles, Droplets, MapPin, Calendar, ChevronDown, ChevronUp, AlertCircle, Shirt, Wind, Thermometer } from "lucide-react";
+import { Cloud, Sparkles, Droplets, MapPin, Calendar, ChevronDown, ChevronUp, AlertCircle, Shirt, Wind, Thermometer, LogIn } from "lucide-react";
 
 // UI Components
 import PremiumBackground from "@/components/ui/PremiumBackground";
@@ -21,6 +22,7 @@ import WeatherSummary from "@/components/ui/WeatherSummary";
 const universities = universitiesData as University[];
 
 export default function Home() {
+    const { user, isLoading: authLoading } = useAuth();
     const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
     const [loadingStep, setLoadingStep] = useState<string>("");
     const [classes, setClasses] = useState<ParsedClass[]>([]);
@@ -384,20 +386,43 @@ export default function Home() {
                                 transition={{ delay: 0.4 }}
                                 className="pt-4"
                             >
-                                <AnimatedButton
-                                    onClick={handleAnalyze}
-                                    disabled={status === "loading" || !getSelectedUniversityData() || !uploadedFile}
-                                    className="w-full text-lg py-4 shadow-2xl"
-                                >
-                                    {status === "loading" ? (
-                                        <span className="flex items-center justify-center gap-3">
-                                            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                            {loadingStep || "Analyzing..."}
-                                        </span>
-                                    ) : (
-                                        "🚀 Analyze Schedule"
-                                    )}
-                                </AnimatedButton>
+                                {!user && !authLoading ? (
+                                    <GlassCard className="text-center py-8">
+                                        <div className="flex flex-col items-center gap-4">
+                                            <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center">
+                                                <LogIn className="w-8 h-8 text-primary" />
+                                            </div>
+                                            <div>
+                                                <h3 className="text-xl font-bold mb-2">Login Required</h3>
+                                                <p className="text-white/60 mb-4">
+                                                    Sign in to analyze your schedule and get personalized attire recommendations
+                                                </p>
+                                            </div>
+                                            <a
+                                                href="/api/auth/login"
+                                                className="px-8 py-3 bg-primary hover:bg-primary/80 rounded-xl font-semibold transition-all shadow-[0_0_20px_rgba(139,92,246,0.3)] flex items-center gap-2"
+                                            >
+                                                <LogIn className="w-5 h-5" />
+                                                Login to Continue
+                                            </a>
+                                        </div>
+                                    </GlassCard>
+                                ) : (
+                                    <AnimatedButton
+                                        onClick={handleAnalyze}
+                                        disabled={status === "loading" || !getSelectedUniversityData() || !uploadedFile || authLoading}
+                                        className="w-full text-lg py-4 shadow-2xl"
+                                    >
+                                        {status === "loading" ? (
+                                            <span className="flex items-center justify-center gap-3">
+                                                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                {loadingStep || "Analyzing..."}
+                                            </span>
+                                        ) : (
+                                            "🚀 Analyze Schedule"
+                                        )}
+                                    </AnimatedButton>
+                                )}
                             </motion.div>
 
                             {/* Error Message */}

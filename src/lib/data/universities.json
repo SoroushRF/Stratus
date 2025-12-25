@@ -23,72 +23,16 @@
   {
     "name": "University of Toronto (Mississauga)",
     "shortName": "UofT",
-    "campus": "Mississauga",
+    "campus": "UTM",
     "lat": 43.5482,
     "lng": -79.6635
   },
   {
     "name": "University of Toronto (Scarborough)",
     "shortName": "UofT",
-    "campus": "Scarborough",
+    "campus": "UTSC",
     "lat": 43.7841,
     "lng": -79.1868
-  },
-  {
-    "name": "McGill University (Downtown)",
-    "shortName": "McGill",
-    "campus": "Downtown",
-    "lat": 45.5048,
-    "lng": -73.5772
-  },
-  {
-    "name": "McGill University (Macdonald)",
-    "shortName": "McGill",
-    "campus": "Macdonald",
-    "lat": 45.4056,
-    "lng": -73.9421
-  },
-  {
-    "name": "University of Alberta (North Campus)",
-    "shortName": "UAlberta",
-    "campus": "North Campus",
-    "lat": 53.5232,
-    "lng": -113.5263
-  },
-  {
-    "name": "University of Alberta (Augustana)",
-    "shortName": "UAlberta",
-    "campus": "Augustana",
-    "lat": 53.0167,
-    "lng": -112.8167
-  },
-  {
-    "name": "University of Waterloo (Main)",
-    "shortName": "Waterloo",
-    "campus": "Main",
-    "lat": 43.4723,
-    "lng": -80.5449
-  },
-  {
-    "name": "University of Waterloo (Health Sciences)",
-    "shortName": "Waterloo",
-    "campus": "Health Sciences",
-    "lat": 43.4475,
-    "lng": -80.485
-  },
-  {
-    "name": "University of Waterloo (Architecture)",
-    "shortName": "Waterloo",
-    "campus": "Architecture",
-    "lat": 43.356,
-    "lng": -80.316
-  },
-  {
-    "name": "University of Waterloo (Stratford)",
-    "shortName": "Waterloo",
-    "campus": "Stratford",
-    "lat": 43.3725,
-    "lng": -80.9768
   },
   {
     "name": "York University (Keele)",
@@ -110,6 +54,69 @@
     "campus": "Markham",
     "lat": 43.8561,
     "lng": -79.34
+  },
+  {
+    "name": "McGill University (Downtown)",
+    "shortName": "McGill",
+    "campus": "Downtown",
+    "lat": 45.5048,
+    "lng": -73.5772
+  },
+  {
+    "name": "McGill University (Macdonald)",
+    "shortName": "McGill",
+    "campus": "Macdonald",
+    "lat": 45.4056,
+    "lng": -73.9421
+  },
+  {
+    "name": "University of Waterloo (Main)",
+    "shortName": "Waterloo",
+    "campus": "Main",
+    "lat": 43.4723,
+    "lng": -80.5449
+  },
+  {
+    "name": "University of Waterloo (Kitchener)",
+    "shortName": "Waterloo",
+    "campus": "Health Sciences",
+    "lat": 43.4475,
+    "lng": -80.485
+  },
+  {
+    "name": "University of Waterloo (Cambridge)",
+    "shortName": "Waterloo",
+    "campus": "Architecture",
+    "lat": 43.356,
+    "lng": -80.316
+  },
+  {
+    "name": "University of Waterloo (Stratford)",
+    "shortName": "Waterloo",
+    "campus": "Interaction Design",
+    "lat": 43.3725,
+    "lng": -80.9768
+  },
+  {
+    "name": "University of Alberta (North Campus)",
+    "shortName": "UAlberta",
+    "campus": "North Campus",
+    "lat": 53.5232,
+    "lng": -113.5263
+  },
+  {
+    "name": "University of Alberta (South Campus)",
+    "shortName": "UAlberta",
+    "campus": "South Campus",
+    "lat": 53.5167,
+    "lng": -113.5211
+  },
+  {
+    "name": "University of Alberta (Augustana)",
+    "shortName": "UAlberta",
+    "campus": "Augustana",
+    "lat": 53.0167,
+    "lng": -112.8167
   },
   {
     "name": "McMaster University (Main)",
@@ -147,11 +154,11 @@
     "lng": -114.1335
   },
   {
-    "name": "University of Calgary (Qatar)",
+    "name": "University of Calgary (Spy Hill)",
     "shortName": "UCalgary",
-    "campus": "Qatar",
-    "lat": 25.3176,
-    "lng": 51.4395
+    "campus": "Spy Hill",
+    "lat": 51.0447,
+    "lng": -113.9819
   },
   {
     "name": "Simon Fraser University (Burnaby)",
@@ -308,6 +315,13 @@
     "lng": -80.2644
   },
   {
+    "name": "Wilfrid Laurier University (Kitchener)",
+    "shortName": "Laurier",
+    "campus": "Kitchener",
+    "lat": 43.4516,
+    "lng": -80.4925
+  },
+  {
     "name": "University of Windsor (Main)",
     "shortName": "Windsor",
     "campus": "Main",
@@ -385,6 +399,13 @@
     "lng": -112.8644
   },
   {
+    "name": "University of Lethbridge (Calgary)",
+    "shortName": "Lethbridge",
+    "campus": "Calgary",
+    "lat": 51.0447,
+    "lng": -114.0719
+  },
+  {
     "name": "Mount Allison University (Main)",
     "shortName": "Mount Allison",
     "campus": "Main",
@@ -441,9 +462,9 @@
     "lng": -97.1500
   },
   {
-    "name": "University of Northern British Columbia (Main)",
+    "name": "University of Northern British Columbia (Prince George)",
     "shortName": "UNBC",
-    "campus": "Main",
+    "campus": "Prince George",
     "lat": 53.9171,
     "lng": -122.7497
   },
@@ -467,6 +488,13 @@
     "campus": "Abbotsford",
     "lat": 49.0504,
     "lng": -122.2861
+  },
+  {
+    "name": "University of the Fraser Valley (Chilliwack)",
+    "shortName": "UFV",
+    "campus": "Chilliwack",
+    "lat": 49.1577,
+    "lng": -121.9509
   },
   {
     "name": "Kwantlen Polytechnic University (Surrey)",
@@ -525,6 +553,13 @@
     "lng": -71.9279
   },
   {
+    "name": "Université de Sherbrooke (Longueuil)",
+    "shortName": "Sherbrooke",
+    "campus": "Longueuil",
+    "lat": 45.5317,
+    "lng": -73.5186
+  },
+  {
     "name": "Université du Québec à Montréal (Main)",
     "shortName": "UQAM",
     "campus": "Main",
@@ -553,18 +588,32 @@
     "lng": -75.7013
   },
   {
-    "name": "Université du Québec en Abitibi-Témiscamingue (Main)",
+    "name": "Université du Québec en Outaouais (Saint-Jérôme)",
+    "shortName": "UQO",
+    "campus": "Saint-Jérôme",
+    "lat": 45.7833,
+    "lng": -74.0000
+  },
+  {
+    "name": "Université du Québec en Abitibi-Témiscamingue (Rouyn-Noranda)",
     "shortName": "UQAT",
-    "campus": "Main",
+    "campus": "Rouyn-Noranda",
     "lat": 48.2333,
     "lng": -79.0167
   },
   {
-    "name": "Université du Québec à Rimouski (Main)",
+    "name": "Université du Québec à Rimouski (Rimouski)",
     "shortName": "UQAR",
-    "campus": "Main",
+    "campus": "Rimouski",
     "lat": 48.4500,
     "lng": -68.5167
+  },
+  {
+    "name": "Université du Québec à Rimouski (Lévis)",
+    "shortName": "UQAR",
+    "campus": "Lévis",
+    "lat": 46.8000,
+    "lng": -71.1833
   },
   {
     "name": "Bishop's University (Main)",
@@ -588,9 +637,9 @@
     "lng": -113.5053
   },
   {
-    "name": "Athabasca University (Main)",
+    "name": "Athabasca University (Athabasca)",
     "shortName": "Athabasca",
-    "campus": "Main",
+    "campus": "Athabasca",
     "lat": 54.7208,
     "lng": -113.2881
   },
@@ -630,11 +679,25 @@
     "lng": -66.6333
   },
   {
-    "name": "Université de Moncton (Main)",
+    "name": "Université de Moncton (Moncton)",
     "shortName": "Moncton",
-    "campus": "Main",
+    "campus": "Moncton",
     "lat": 46.1000,
     "lng": -64.7833
+  },
+  {
+    "name": "Université de Moncton (Edmundston)",
+    "shortName": "Moncton",
+    "campus": "Edmundston",
+    "lat": 47.3667,
+    "lng": -68.3333
+  },
+  {
+    "name": "Université de Moncton (Shippagan)",
+    "shortName": "Moncton",
+    "campus": "Shippagan",
+    "lat": 47.7333,
+    "lng": -64.7000
   },
   {
     "name": "Algoma University (Sault Ste. Marie)",
@@ -679,17 +742,213 @@
     "lng": -79.7833
   },
   {
-    "name": "Trinity Western University (Main)",
+    "name": "Trinity Western University (Langley)",
     "shortName": "TWU",
-    "campus": "Main",
+    "campus": "Langley",
     "lat": 49.0500,
     "lng": -122.6167
   },
   {
-    "name": "Quest University (Main)",
+    "name": "Quest University (Squamish)",
     "shortName": "Quest",
-    "campus": "Main",
+    "campus": "Squamish",
     "lat": 50.1167,
     "lng": -122.9500
+  },
+  {
+    "name": "University Canada West (Vancouver)",
+    "shortName": "UCW",
+    "campus": "Vancouver",
+    "lat": 49.2827,
+    "lng": -123.1207
+  },
+  {
+    "name": "Crandall University (Moncton)",
+    "shortName": "Crandall",
+    "campus": "Moncton",
+    "lat": 46.0878,
+    "lng": -64.7782
+  },
+  {
+    "name": "Seneca College (Newnham)",
+    "shortName": "Seneca",
+    "campus": "Newnham",
+    "lat": 43.7963,
+    "lng": -79.3486
+  },
+  {
+    "name": "Seneca College (King)",
+    "shortName": "Seneca",
+    "campus": "King",
+    "lat": 43.9275,
+    "lng": -79.5342
+  },
+  {
+    "name": "Seneca College (Markham)",
+    "shortName": "Seneca",
+    "campus": "Markham",
+    "lat": 43.8561,
+    "lng": -79.3370
+  },
+  {
+    "name": "Humber College (North)",
+    "shortName": "Humber",
+    "campus": "North",
+    "lat": 43.7284,
+    "lng": -79.6076
+  },
+  {
+    "name": "Humber College (Lakeshore)",
+    "shortName": "Humber",
+    "campus": "Lakeshore",
+    "lat": 43.6167,
+    "lng": -79.4833
+  },
+  {
+    "name": "George Brown College (St. James)",
+    "shortName": "George Brown",
+    "campus": "St. James",
+    "lat": 43.6761,
+    "lng": -79.4106
+  },
+  {
+    "name": "George Brown College (Casa Loma)",
+    "shortName": "George Brown",
+    "campus": "Casa Loma",
+    "lat": 43.6744,
+    "lng": -79.4119
+  },
+  {
+    "name": "George Brown College (Waterfront)",
+    "shortName": "George Brown",
+    "campus": "Waterfront",
+    "lat": 43.6386,
+    "lng": -79.3636
+  },
+  {
+    "name": "Sheridan College (Trafalgar)",
+    "shortName": "Sheridan",
+    "campus": "Trafalgar",
+    "lat": 43.4516,
+    "lng": -79.7011
+  },
+  {
+    "name": "Sheridan College (Davis)",
+    "shortName": "Sheridan",
+    "campus": "Davis",
+    "lat": 43.5890,
+    "lng": -79.6441
+  },
+  {
+    "name": "Sheridan College (Hazel McCallion)",
+    "shortName": "Sheridan",
+    "campus": "Hazel McCallion",
+    "lat": 43.5890,
+    "lng": -79.6441
+  },
+  {
+    "name": "Centennial College (Progress)",
+    "shortName": "Centennial",
+    "campus": "Progress",
+    "lat": 43.7854,
+    "lng": -79.2306
+  },
+  {
+    "name": "Centennial College (Ashtonbee)",
+    "shortName": "Centennial",
+    "campus": "Ashtonbee",
+    "lat": 43.7333,
+    "lng": -79.2333
+  },
+  {
+    "name": "Centennial College (Morningside)",
+    "shortName": "Centennial",
+    "campus": "Morningside",
+    "lat": 43.7854,
+    "lng": -79.1950
+  },
+  {
+    "name": "Algonquin College (Woodroffe)",
+    "shortName": "Algonquin",
+    "campus": "Woodroffe",
+    "lat": 45.3489,
+    "lng": -75.7537
+  },
+  {
+    "name": "Algonquin College (Pembroke)",
+    "shortName": "Algonquin",
+    "campus": "Pembroke",
+    "lat": 45.8167,
+    "lng": -77.1000
+  },
+  {
+    "name": "Algonquin College (Perth)",
+    "shortName": "Algonquin",
+    "campus": "Perth",
+    "lat": 44.9000,
+    "lng": -76.2500
+  },
+  {
+    "name": "British Columbia Institute of Technology (Burnaby)",
+    "shortName": "BCIT",
+    "campus": "Burnaby",
+    "lat": 49.2497,
+    "lng": -123.0016
+  },
+  {
+    "name": "British Columbia Institute of Technology (Downtown Vancouver)",
+    "shortName": "BCIT",
+    "campus": "Downtown Vancouver",
+    "lat": 49.2827,
+    "lng": -123.1207
+  },
+  {
+    "name": "British Columbia Institute of Technology (Aerospace)",
+    "shortName": "BCIT",
+    "campus": "Aerospace",
+    "lat": 49.1951,
+    "lng": -123.1820
+  },
+  {
+    "name": "Southern Alberta Institute of Technology (Main)",
+    "shortName": "SAIT",
+    "campus": "Main",
+    "lat": 51.0644,
+    "lng": -114.0853
+  },
+  {
+    "name": "Northern Alberta Institute of Technology (Main)",
+    "shortName": "NAIT",
+    "campus": "Main",
+    "lat": 53.5673,
+    "lng": -113.5089
+  },
+  {
+    "name": "Northern Alberta Institute of Technology (Souch)",
+    "shortName": "NAIT",
+    "campus": "Souch",
+    "lat": 53.5167,
+    "lng": -113.6167
+  },
+  {
+    "name": "Conestoga College (Doon)",
+    "shortName": "Conestoga",
+    "campus": "Doon",
+    "lat": 43.4167,
+    "lng": -80.4667
+  },
+  {
+    "name": "Conestoga College (Waterloo)",
+    "shortName": "Conestoga",
+    "campus": "Waterloo",
+    "lat": 43.4643,
+    "lng": -80.5204
+  },
+  {
+    "name": "Conestoga College (Guelph)",
+    "shortName": "Conestoga",
+    "campus": "Guelph",
+    "lat": 43.5448,
+    "lng": -80.2482
   }
 ]
