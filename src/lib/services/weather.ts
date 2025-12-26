@@ -1,5 +1,6 @@
 import { WeatherData, HourlyForecast } from "@/types";
 import { getDummyWeatherForDate } from "@/lib/data/dummyWeather";
+import AIConfigService from "./ai-config";
 
 /**
  * Weather Service Interface
@@ -55,6 +56,9 @@ class LiveWeatherService implements WeatherService {
       if (!response.ok) {
         throw new Error(`Weather API error: ${response.status} ${response.statusText}`);
       }
+
+      // Increment usage count in DB
+      await AIConfigService.incrementWeatherUsage();
 
       const data = await response.json();
       
@@ -154,5 +158,12 @@ export async function getWeatherForecast(
   lng: number,
   date: string
 ): Promise<WeatherData> {
+  // Check maintenance mode
+  if (await AIConfigService.isMaintenanceMode()) {
+    console.log("[WEATHER] Skipping live fetch - Maintenance mode active");
+    // Fall back to dummy for better UX
+    const dummyService = new DummyWeatherService();
+    return dummyService.getHourlyForecast(lat, lng, date);
+  }
   return weatherService.getHourlyForecast(lat, lng, date);
 }

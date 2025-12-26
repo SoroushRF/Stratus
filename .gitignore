@@ -5,6 +5,10 @@ node_modules/
 
 # Testing
 coverage/
+playwright-report/
+test-results/
+blob-report/
+playwright/.cache/
 
 # Next.js
 .next/
@@ -76,3 +80,11 @@ ts_errors.txt
 
 # Development / Planning
 .agent/
+
+# Planning Documents (keep local only)
+STRATUS_MASTER_PLAN.md
+TESTING_IMPLEMENTATION_PLAN.md
+PROJECT_STRUCTURE_ANALYSIS.md
+*_MIGRATION.sql
+SECURITY_*.md
+TASK_*.md
