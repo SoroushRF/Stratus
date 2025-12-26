@@ -4,16 +4,16 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { ParsedClass, University, Day } from "@/types";
-import universitiesData from "@/lib/data/universities.json";
 import { motion, AnimatePresence } from "framer-motion";
 import { Save, X, Plus, Trash2, User, MapPin, Calendar, ArrowLeft, AlertTriangle, AlertCircle } from "lucide-react";
 import GlassCard from "@/components/ui/GlassCard";
 import AnimatedButton from "@/components/ui/AnimatedButton";
 import FileUpload from "@/components/ui/FileUpload";
-import { processSchedule } from "@/app/actions";
+import { processSchedule, getUniversitiesAction } from "@/app/actions";
 import Link from "next/link";
 
-const universities = universitiesData as University[];
+// Removed static universities import
+
 
 export default function ProfilePage() {
     const { user, isLoading: authLoading, logout, refreshUser } = useAuth();
@@ -30,6 +30,8 @@ export default function ProfilePage() {
     const [deleting, setDeleting] = useState(false);
     const [showErrors, setShowErrors] = useState(false);
     const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+    const [universities, setUniversities] = useState<University[]>([]);
+    const [universitiesLoading, setUniversitiesLoading] = useState(true);
 
     // Redirect if not logged in
     useEffect(() => {
@@ -38,12 +40,24 @@ export default function ProfilePage() {
         }
     }, [user, authLoading, router]);
 
+    // Load universities from DB with JSON fallback
+    useEffect(() => {
+        const loadUniversities = async () => {
+            const result = await getUniversitiesAction();
+            if (result.success && result.data) {
+                setUniversities(result.data);
+            }
+            setUniversitiesLoading(false);
+        };
+        loadUniversities();
+    }, []);
+
     // Load user data
     useEffect(() => {
-        if (user) {
+        if (user && !universitiesLoading) {
             loadUserData();
         }
-    }, [user]);
+    }, [user, universitiesLoading]);
 
     const loadUserData = async () => {
         try {

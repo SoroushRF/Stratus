@@ -24,10 +24,10 @@ export async function GET(request: NextRequest) {
 
     const userId = decodedPayload.sub;
 
-    // Fetch user from Supabase to get custom name
+    // Fetch user from Supabase to get custom name and admin status
     const { data: dbUser, error: dbError } = await supabaseAdmin
       .from('users')
-      .select('first_name, last_name, name')
+      .select('first_name, last_name, name, is_admin')
       .eq('id', userId)
       .single();
 
@@ -49,6 +49,7 @@ export async function GET(request: NextRequest) {
       email: decodedPayload.email,
       picture: decodedPayload.picture,
       nickname: decodedPayload.nickname,
+      is_admin: dbUser?.is_admin || false,
       updated_at: decodedPayload.updated_at,
     };
 

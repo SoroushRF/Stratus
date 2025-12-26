@@ -4,9 +4,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from '@/hooks/useAuth';
-import { processSchedule, getWeatherForecastAction, generateAttireRecommendationsAction, generateMasterRecommendationAction } from "@/app/actions";
+import { processSchedule, getWeatherForecastAction, generateAttireRecommendationsAction, generateMasterRecommendationAction, getUniversitiesAction } from "@/app/actions";
 import { ParsedClass, University, ClassAttireRecommendation, MasterRecommendation } from "@/types";
-import universitiesData from "@/lib/data/universities.json";
 import { matchClassesToWeather, filterClassesByDay, ClassWeatherMatch } from "@/lib/utils/weatherMatcher";
 import { resolveAnalysisDay, getDateForAnalysisDay } from "@/lib/utils/dateHelpers";
 import { motion, AnimatePresence } from "framer-motion";
@@ -20,8 +19,6 @@ import CampusSelector from "@/components/ui/CampusSelector";
 import FileUpload from "@/components/ui/FileUpload";
 import WeatherSummary from "@/components/ui/WeatherSummary";
 
-const universities = universitiesData as University[];
-
 export default function Home() {
     const router = useRouter();
     const { user, isLoading: authLoading } = useAuth();
@@ -32,6 +29,8 @@ export default function Home() {
     const [fullWeatherData, setFullWeatherData] = useState<any>(null); // Store complete 24-hour forecast
     const [classAttireRecommendations, setClassAttireRecommendations] = useState<ClassAttireRecommendation[]>([]);
     const [masterRecommendation, setMasterRecommendation] = useState<MasterRecommendation | null>(null);
+    const [universities, setUniversities] = useState<University[]>([]);
+    const [universitiesLoading, setUniversitiesLoading] = useState(true);
     const [collapsedClasses, setCollapsedClasses] = useState<Set<number>>(new Set());
     
     // Two-tier selection: University → Campus
@@ -46,20 +45,32 @@ export default function Home() {
     const [hasSavedProfile, setHasSavedProfile] = useState(false);
     const [savedScheduleFileName, setSavedScheduleFileName] = useState<string | null>(null);
 
+    // Load universities from DB with JSON fallback
+    useEffect(() => {
+        const loadUniversities = async () => {
+            const result = await getUniversitiesAction();
+            if (result.success && result.data) {
+                setUniversities(result.data);
+            }
+            setUniversitiesLoading(false);
+        };
+        loadUniversities();
+    }, []);
+
     // Auto-load saved data when user logs in
     useEffect(() => {
-        if (user && !authLoading && !dataLoaded) {
+        if (user && !authLoading && !dataLoaded && !universitiesLoading) {
             loadSavedData();
         }
-    }, [user, authLoading, dataLoaded]);
+    }, [user, authLoading, dataLoaded, universitiesLoading]);
 
     // Auto-save for first-time users only
     // If they don't have a saved profile yet, save their first selection
     useEffect(() => {
-        if (user && !hasSavedProfile && selectedUniversity && selectedCampus && dataLoaded) {
+        if (user && !hasSavedProfile && selectedUniversity && selectedCampus && dataLoaded && !universitiesLoading) {
             saveInitialPreferences();
         }
-    }, [selectedUniversity, selectedCampus, user, hasSavedProfile, dataLoaded]);
+    }, [selectedUniversity, selectedCampus, user, hasSavedProfile, dataLoaded, universitiesLoading]);
 
     const saveInitialPreferences = async () => {
         if (!selectedUniversity || !selectedCampus || hasSavedProfile) return;
