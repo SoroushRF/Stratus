@@ -20,6 +20,17 @@
 
 <hr />
 
+## 📖 Table of Contents
+- [Vision](#-vision)
+- [Premium Features](#-premium-features)
+- [Enterprise Admin & Testing Suite](#-enterprise-admin--testing-suite-powerful-controls)
+- [Modern Tech Stack](#-modern-tech-stack)
+- [Quick Start](#-quick-start)
+- [Progress & Roadmap](#-progress--roadmap)
+- [Contribution Strategy](#-contribution-strategy)
+
+---
+
 ## 🌟 Vision
 
 **Stratus** turns your chaotic morning routine into a streamlined, AI-optimized experience. By bridging the gap between your **class schedule** and **micro-local weather forecasts**, Stratus eliminates the guesswork of getting dressed. 
@@ -48,6 +59,43 @@ No more checking three different apps. No more carrying a jacket you won't need.
 - **Seamless Auth**: Powered by **Auth0** for enterprise-grade security.
 - **Cloud Sync**: Your university preferences and schedules are saved in **Supabase**, ready on any device.
 - **Profile Mastery**: Customize your display name and manage your data with a few clicks.
+
+---
+
+## 🛡️ Enterprise Admin & Testing Suite: Powerful Controls
+
+We utilize a robust **Admin Dashboard** designed for engineering leads to maintain system integrity and simulate edge cases without leaving the UI.
+
+### 🧪 **The Testing Lab (Phase 4)**
+
+<table align="center">
+  <tr>
+    <td align="center" width="50%">
+        <h3>Unit Pulse & E2E Flow Checks</h3>
+        <p>Our custom-built <a href="src/app/admin/tests/page.tsx">Testing Lab</a> integrates <b>Vitest</b> and <b>Playwright</b> directly into the application dashboard.</p>
+        <ul>
+            <li><b>One-Click Execution</b>: Run the full 100+ test suite with a single button press.</li>
+            <li><b>Live Streaming Logs</b>: Watch unit tests pass in real-time via server-sent events (SSE).</li>
+            <li><b>Network Interception</b>: We use advanced request interception to simulate API failures and maintenance modes, ensuring our frontend is bulletproof.</li>
+        </uL>
+    </td>
+    <td align="center">
+      <img src="https://img.icons8.com/isometric/512/experimental.png" width="100" />
+    </td>
+  </tr>
+</table>
+
+### 🎛️ **Operations Command Center**
+The **Operations Panel** gives administrators god-mode control over the application state:
+- **Emergency Maintenance Mode**: Instantly lock the application and display a sitewide maintenance banner. Useful during critical database migrations.
+- **Token Analytics**: Real-time tracking of Gemini AI interactions, including estimated costs, token usage per model, and latency metrics.
+- **System Broadcasts**: Push active "Notices" (Info, Warning, Critical) to all connected clients instantly.
+
+### 🔍 **Quality Assurance at Scale**
+We maintain a strict **100% Test Pass Rate** policy.
+- **16 Unit/Integration Tests**: Validating core logic, date parsing, and weather matching.
+- **5 End-to-End Flows**: Simulating a complete user journey from login to outfit recommendation.
+- **Strict Mode Compliance**: Our E2E tests enforce strict accessibility and selector uniqueness to guarantee a high-quality UI.
 
 ---
 
