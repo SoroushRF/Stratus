@@ -161,10 +161,9 @@ export async function getWeatherForecast(
   // Check maintenance mode
   if (await AIConfigService.isMaintenanceMode()) {
     console.log("[WEATHER] Skipping live fetch - Maintenance mode active");
-    // Fall back to dummy for a better UX, or throw? 
-    // Let's fallback to dummy so the app stays "usable" but doesn't hit the paid API
-    const dummy = new (require('./weather').DummyWeatherService)();
-    return dummy.getHourlyForecast(lat, lng, date);
+    // Fall back to dummy for better UX
+    const dummyService = new DummyWeatherService();
+    return dummyService.getHourlyForecast(lat, lng, date);
   }
   return weatherService.getHourlyForecast(lat, lng, date);
 }
