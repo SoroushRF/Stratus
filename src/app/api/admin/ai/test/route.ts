@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
   try {
     const { prompt, model: modelName, sampleInput } = await request.json();
 
-    const modelProvider = genAI.getGenerativeModel({ model: modelName || "gemini-1.5-flash" });
+    const modelProvider = genAI.getGenerativeModel({ model: modelName || "gemini-2.0-flash-exp" });
     
     // Simulate content generation for testing
     // If sampleInput is base64, we treat it as image (for schedule parser)

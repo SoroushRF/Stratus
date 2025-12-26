@@ -73,7 +73,7 @@ class AIConfigService {
     if (!cache || (Date.now() - cache.lastFetched > CACHE_TTL)) {
       await this.refreshCache();
     }
-    return cache?.prompts[slug]?.model_override || cache?.configs['default_model'] || 'gemini-1.5-flash';
+    return cache?.prompts[slug]?.model_override || cache?.configs['default_model'] || 'gemini-2.0-flash-exp';
   }
 
   static async getConfig(key: string): Promise<any> {
