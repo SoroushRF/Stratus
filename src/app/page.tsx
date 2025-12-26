@@ -14,10 +14,19 @@ import PremiumBackground from "@/components/ui/PremiumBackground";
 import AnimatedButton from "@/components/ui/AnimatedButton";
 import SystemNoticeBanner from "@/components/ui/SystemNoticeBanner";
 
+import dynamic from "next/dynamic";
+
 // Dashboard Components (Task 1.2)
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import OnboardingWizard from "@/components/dashboard/OnboardingWizard";
-import AnalysisView from "@/components/dashboard/AnalysisView";
+
+const AnalysisView = dynamic(() => import("@/components/dashboard/AnalysisView"), {
+    loading: () => (
+        <div className="min-h-[400px] flex items-center justify-center">
+            <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+        </div>
+    )
+});
 
 // =====================================================
 // HELPER FUNCTIONS

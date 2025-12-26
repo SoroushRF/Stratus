@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import {
   processSchedule,
   getWeatherForecastAction,
@@ -115,9 +116,10 @@ export function useWeatherAnalysis(): WeatherAnalysisState {
 
       setStatus('loading');
       setError(null);
-
-      try {
-        let parsedClasses: ParsedClass[];
+      
+      const analysisPromise = (async () => {
+        try {
+          let parsedClasses: ParsedClass[];
 
         // ===== STEP 1: Determine schedule source =====
         if (userId && usesSavedSchedule && savedClasses.length > 0) {
@@ -258,15 +260,24 @@ export function useWeatherAnalysis(): WeatherAnalysisState {
 
         // Redirect to analysis page
         router.push('/analysis');
+        return analysisResults;
       } catch (err) {
         console.error('Analysis error:', err);
         setStatus('error');
         setError('Error during analysis. Please try again.');
         setLoadingStep('');
+        throw err;
       }
-    },
-    [router]
-  );
+    })();
+
+    toast.promise(analysisPromise, {
+      loading: 'Calculating your atmospheric profile...',
+      success: () => 'Analysis complete! Check your roadmap.',
+      error: (err) => err.message || 'The analysis encountered a storm. Please try again.',
+    });
+  },
+  [router]
+);
 
   // =====================================================
   // RESET

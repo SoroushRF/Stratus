@@ -23,6 +23,10 @@ const CACHE_TTL = 5 * 60 * 1000;
 
 class AIConfigService {
   private static async refreshCache() {
+    if (process.env.MOCK_AI === 'true') {
+      cache = { prompts: {}, configs: {}, lastFetched: Date.now() };
+      return;
+    }
     try {
       const [promptsRes, configsRes] = await Promise.all([
         supabaseAdmin.from('ai_prompts').select('*').eq('is_active', true),
@@ -84,11 +88,22 @@ class AIConfigService {
   }
 
   static async isMaintenanceMode(): Promise<boolean> {
+    if (process.env.MOCK_AI === 'true') {
+      try {
+        const { cookies } = await import('next/headers');
+        const cookieStore = await cookies();
+        if (cookieStore.get('mock_maintenance')?.value === 'true') return true;
+      } catch (e) {
+        // Fallback if cookies() is called outside of request context
+      }
+      return false;
+    }
     const val = await this.getConfig('maintenance_mode');
     return val === 'true' || val === true;
   }
 
   static async incrementWeatherUsage() {
+    if (process.env.MOCK_AI === 'true') return;
     try {
       // Direct increment in DB to stay accurate
       await supabaseAdmin.rpc('increment_weather_usage');
@@ -110,6 +125,7 @@ class AIConfigService {
     completion_tokens?: number;
     user_id?: string;
   }) {
+    if (process.env.MOCK_AI === 'true') return;
     try {
       await supabaseAdmin.from('ai_logs').insert(logData);
     } catch (error) {

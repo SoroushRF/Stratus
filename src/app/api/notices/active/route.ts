@@ -1,7 +1,26 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
+import { cookies } from 'next/headers';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
+  if (process.env.MOCK_AI === 'true') {
+    const cookieStore = await cookies();
+    if (cookieStore.get('mock_maintenance')?.value === 'true') {
+      return NextResponse.json({
+        success: true,
+        data: [{
+          id: 'mock-maint',
+          title: 'System Maintenance',
+          message: 'We are currently upgrading our atmospheric sensors. AI analysis is temporarily disabled.',
+          type: 'maintenance',
+          is_active: true,
+          created_at: new Date().toISOString()
+        }]
+      });
+    }
+  }
   try {
     const { data, error } = await supabaseAdmin
       .from('system_notices')

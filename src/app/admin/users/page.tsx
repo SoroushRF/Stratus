@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Users as UsersIcon, ArrowLeft, Clock, User as UserIcon, Loader2 } from "lucide-react";
+import Image from "next/image";
 import GlassCard from "@/components/ui/GlassCard";
 
 export default function UsersManagement() {
@@ -95,7 +96,13 @@ export default function UsersManagement() {
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
                                             {user.picture ? (
-                                                <img src={user.picture} alt="" className="w-8 h-8 rounded-full border border-white/10" />
+                                                <Image 
+                                                    src={user.picture} 
+                                                    alt={user.name || "User"} 
+                                                    width={32}
+                                                    height={32}
+                                                    className="w-8 h-8 rounded-full border border-white/10" 
+                                                />
                                             ) : (
                                                 <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center">
                                                     <UserIcon className="w-4 h-4 text-white/40" />

@@ -13,8 +13,10 @@ import {
     AlertTriangle,
     Clock,
     User as UserIcon,
-    Loader2
+    Loader2,
+    FlaskConical
 } from "lucide-react";
+import Image from "next/image";
 import GlassCard from "@/components/ui/GlassCard";
 
 const adminModules = [
@@ -49,6 +51,14 @@ const adminModules = [
         color: "text-amber-400",
         stats: "Control Room",
         phase: 4
+    },
+    {
+        title: "Testing & Integrity",
+        description: "Execute automated unit tests and E2E simulations to verify system health.",
+        icon: FlaskConical,
+        color: "text-rose-400",
+        stats: "Quality Lab",
+        phase: 5
     }
 ];
 
@@ -149,7 +159,13 @@ export default function AdminDashboard() {
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
                                                 {user.picture ? (
-                                                    <img src={user.picture} alt="" className="w-8 h-8 rounded-full border border-white/10" />
+                                                    <Image 
+                                                        src={user.picture} 
+                                                        alt={user.name || "User"} 
+                                                        width={32}
+                                                        height={32}
+                                                        className="w-8 h-8 rounded-full border border-white/10" 
+                                                    />
                                                 ) : (
                                                     <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center">
                                                         <UserIcon className="w-4 h-4 text-white/40" />
@@ -190,7 +206,7 @@ export default function AdminDashboard() {
                 </GlassCard>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {adminModules.map((module, index) => (
                     <motion.div
                         key={module.title}
@@ -206,6 +222,8 @@ export default function AdminDashboard() {
                                 window.location.href = "/admin/ai";
                             } else if (module.title === "Operations & Health") {
                                 window.location.href = "/admin/operations";
+                            } else if (module.title === "Testing & Integrity") {
+                                window.location.href = "/admin/tests";
                             }
                         }}
                     >
