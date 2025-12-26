@@ -25,6 +25,7 @@
 
 - [🌌 The Vision](#-the-vision)
 - [🏗️ System Architecture](#️-system-architecture)
+- [🛠️ The Arsenal (Tech Stack)](#-the-arsenal-tech-stack)
 - [🧩 Core Intelligence Engine](#-core-intelligence-engine)
 - [🛡️ The Enterprise Admin Nexus](#️-the-enterprise-admin-nexus)
   - [Technological Governance](#technological-governance)
@@ -63,6 +64,23 @@ Stratus is built on a **Serverless, Edge-First Architecture** designed for speed
 - **Server Actions**: We bypass traditional API routes for direct, type-safe mutations from the client to the database/AI services.
 - **Edge Routing**: Critical logic runs close to the user, ensuring sub-100ms latency for initial renders.
 - **Supabase (BaaS)**: Managed PostgreSQL provides robust relational data storage with Row Level Security (RLS) policies baked into the schema.
+
+---
+
+## 🛠️ The Arsenal (Tech Stack)
+
+We didn't just pick tools; we chose weapons. Stratus is forged with the absolute latest in web technology.
+
+<div align="center">
+
+| **Frontend Velocity** | **Intelligence Core** | **Ironclad Infra** |
+| :---: | :---: | :---: |
+| <img src="https://img.shields.io/badge/Next.js%2015-000000?style=for-the-badge&logo=nextdotjs&logoColor=white" /> | <img src="https://img.shields.io/badge/Gemini%202.5-8E75B2?style=for-the-badge&logo=google-gemini&logoColor=white" /> | <img src="https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white" /> |
+| <img src="https://img.shields.io/badge/React%2019-61DAFB?style=for-the-badge&logo=react&logoColor=black" /> | <img src="https://img.shields.io/badge/Tomorrow.io-333333?style=for-the-badge&logo=googlecloud&logoColor=white" /> | <img src="https://img.shields.io/badge/Auth0-EB5424?style=for-the-badge&logo=auth0&logoColor=white" /> |
+| <img src="https://img.shields.io/badge/Tailwind%20CSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white" /> | <img src="https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" /> | <img src="https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" /> |
+| <img src="https://img.shields.io/badge/Framer%20Motion-0055FF?style=for-the-badge&logo=framer&logoColor=white" /> | <img src="https://img.shields.io/badge/Server%20Actions-000000?style=for-the-badge&logo=nextdotjs&logoColor=white" /> | <img src="https://img.shields.io/badge/TypeScript%205-3178C6?style=for-the-badge&logo=typescript&logoColor=white" /> |
+
+</div>
 
 ---
 
