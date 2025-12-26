@@ -1,28 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
+import { ensureUserExists } from '@/lib/middleware/ensureUser';
 
 export async function GET(request: NextRequest) {
   try {
-    // Get session cookie
-    const sessionCookie = request.cookies.get('auth0_session');
+    // Ensure user exists in DB (this will create them if it's their first login)
+    const userInfo = await ensureUserExists(request);
     
-    if (!sessionCookie) {
+    if (!userInfo) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    // Parse the session
-    const session = JSON.parse(sessionCookie.value);
-    
-    if (!session.id_token) {
-      return NextResponse.json({ error: 'Invalid session' }, { status: 401 });
-    }
-
-    // Decode the ID token (JWT) to get user info
-    const idToken = session.id_token;
-    const payload = idToken.split('.')[1];
-    const decodedPayload = JSON.parse(Buffer.from(payload, 'base64').toString());
-
-    const userId = decodedPayload.sub;
+    const { userId, userEmail, userName, userPicture } = userInfo;
 
     // Fetch user from Supabase to get custom name and admin status
     const { data: dbUser, error: dbError } = await supabaseAdmin
@@ -32,7 +21,7 @@ export async function GET(request: NextRequest) {
       .single();
 
     // Determine the name to show: DB First + Last, or DB Name, or Auth0 Name
-    let displayName = decodedPayload.name;
+    let displayName = userName;
     
     if (dbUser) {
       if (dbUser.first_name || dbUser.last_name) {
@@ -46,11 +35,9 @@ export async function GET(request: NextRequest) {
     const user = {
       sub: userId,
       name: displayName,
-      email: decodedPayload.email,
-      picture: decodedPayload.picture,
-      nickname: decodedPayload.nickname,
+      email: userEmail,
+      picture: userPicture,
       is_admin: dbUser?.is_admin || false,
-      updated_at: decodedPayload.updated_at,
     };
 
     return NextResponse.json(user);
