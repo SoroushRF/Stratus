@@ -9,6 +9,13 @@ import { ClassAttireRecommendation } from "@/types";
 
 export async function processSchedule(base64Data: string, mimeType: string) {
   try {
+    // Basic backend size check (5MB limit)
+    // Base64 is ~33% larger than binary, so 5MB binary is ~6.7MB Base64
+    const approxSizeInBytes = (base64Data.length * 3) / 4;
+    if (approxSizeInBytes > 5 * 1024 * 1024) {
+      throw new Error("File too large. Maximum size is 5MB.");
+    }
+
     const classes = await extractSchedule(base64Data, mimeType);
     return { success: true, data: classes };
   } catch (error) {
