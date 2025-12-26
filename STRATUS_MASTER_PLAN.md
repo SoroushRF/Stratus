@@ -29,11 +29,11 @@ This document serves as the **Single Source of Truth** for the major architectur
 - [x] **Extract `AnalysisView`**: Isolate the results grid (Weather + Attire + Schedule).
 - [x] **Refactor `page.tsx`**: It should only be ~50 lines long, composing these components.
 
-### **Task 1.3: Input Standardization (Zod)**
+### **Task 1.3: Input Standardization (Zod)** ✅ COMPLETE
 *Why: Fails fast on invalid input, saving expensive AI processing time/cost.*
-- [ ] **Create `src/lib/schemas.ts`**:
+- [x] **Create `src/lib/schemas.ts`**:
   - Define `UniversitySchema`, `ScheduleFileSchema`, `UserProfileSchema`.
-- [ ] **Apply to `actions.ts`**:
+- [x] **Apply to `actions.ts`**:
   - Validate inputs *before* calling Gemini/Tomorrow.io services.
 
 ---
