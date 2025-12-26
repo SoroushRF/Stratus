@@ -11,6 +11,7 @@
     <a href="https://supabase.com"><img src="https://img.shields.io/badge/Supabase-DB-3FCF8E?style=for-the-badge&logo=supabase" alt="Supabase" /></a>
     <a href="https://auth0.com"><img src="https://img.shields.io/badge/Auth0-Security-EB5424?style=for-the-badge&logo=auth0" alt="Auth0" /></a>
     <a href="https://deepmind.google/technologies/gemini/"><img src="https://img.shields.io/badge/Gemini-AI-8E75B2?style=for-the-badge&logo=google-gemini" alt="Gemini AI" /></a>
+    <a href="https://vitest.dev"><img src="https://img.shields.io/badge/Tests-102%20Passing-emerald?style=for-the-badge&logo=vitest" alt="Tests" /></a>
   </p>
 
   <p><i>Building the future of personal preparation through intelligent context.</i></p>
@@ -21,179 +22,190 @@
 <hr />
 
 ## 📖 Table of Contents
-- [Vision](#-vision)
-- [Premium Features](#-premium-features)
-- [Enterprise Admin & Testing Suite](#-enterprise-admin--testing-suite-powerful-controls)
-- [Modern Tech Stack](#-modern-tech-stack)
-- [Quick Start](#-quick-start)
-- [Progress & Roadmap](#-progress--roadmap)
-- [Contribution Strategy](#-contribution-strategy)
+
+- [🌌 The Vision](#-the-vision)
+- [🏗️ System Architecture](#️-system-architecture)
+- [🧩 Core Intelligence Engine](#-core-intelligence-engine)
+  - [AI-Driven Schedule Extraction](#1-ai-driven-schedule-extraction-gemini-25-flash-lite)
+  - [Temporal Weather Harmonization](#2-temporal-weather-harmonization-tomorrowio)
+  - [Generative Attire Reasoning](#3-generative-attire-reasoning-context-aware-llm)
+- [🛡️ Enterprise Operations Suite](#️-enterprise-operations-suite)
+- [🧪 The Quality Assurance Lab](#-the-quality-assurance-lab)
+- [🔐 Security & Compliance](#-security--compliance)
+- [🚀 Quick Start Guide](#-quick-start-guide)
+- [🛣️ Roadmap](#️-roadmap)
 
 ---
 
-## 🌟 Vision
+## � The Vision
 
-**Stratus** turns your chaotic morning routine into a streamlined, AI-optimized experience. By bridging the gap between your **class schedule** and **micro-local weather forecasts**, Stratus eliminates the guesswork of getting dressed. 
+We live in an era of information overload. Students and professionals juggle fragmented data every morning: a PDF class schedule, a weather app showing "average" city temperatures, and a wardrobe full of unorganized clothes.
 
-No more checking three different apps. No more carrying a jacket you won't need. Just pure, personalized intelligence that knows exactly what your day looks like.
+**Stratus** turns this chaos into order.
 
----
-
-## 🚀 Premium Features
-
-### 📅 **AI Schedule Intelligence**
-- **Multimodal Extraction**: Upload a PDF, a photo, or even a raw **.txt file** of your messy schedule. Our **Gemini 2.5 Flash Lite** engine extracts course names, times, and exact campus locations with surgical precision.
-- **Manual Control**: Add, edit, or delete classes manually with a sleek, responsive interface.
-- **Top-of-List Priority**: New additions always appear at the top for immediate focus.
-
-### 🌤️ **Hyper-Local Context**
-- **Campus-Specific Weather**: We don't just give you "city weather." We fetch hourly data for your specific university campus using the **Tomorrow.io API**.
-- **Contextual Matching**: Our engine maps weather conditions (temp, precipitation, wind) to your exact class times, alerting you to changes *during* your transit.
-
-### 👗 **Generative Styling Engine**
-- **Micro-Recommendations**: Get a tailored outfit suggestion for *every single class* based on transitions between indoors and outdoors.
-- **Master Strategy**: A synthesized "Outfit of the Day" that covers the volatility of your entire schedule.
-- **Reasoning**: Understand the *why* behind every layer suggested.
-
-### 👤 **Account & Personalization**
-- **Seamless Auth**: Powered by **Auth0** for enterprise-grade security.
-- **Cloud Sync**: Your university preferences and schedules are saved in **Supabase**, ready on any device.
-- **Profile Mastery**: Customize your display name and manage your data with a few clicks.
+It is not just a weather app. It is a **Context Engine**. By understanding exactly *where* you need to be and *when*, Stratus acts as a hyper-intelligent layer between your calendar and the atmosphere. It eliminates the cognitive load of preparation, answering the only question that matters: *"What should I wear to survive today?"*
 
 ---
 
-## 🛡️ Enterprise Admin & Testing Suite: Powerful Controls
+## 🏗️ System Architecture
 
-We utilize a robust **Admin Dashboard** designed for engineering leads to maintain system integrity and simulate edge cases without leaving the UI.
+Stratus is built on a **Serverless, Edge-First Architecture** designed for speed, scalability, and resilience.
 
-### 🧪 **The Testing Lab (Phase 4)**
+### **Frontend Layer (The Experience)**
+- **Next.js 15 (App Router)**: Utilizing React Server Components (RSC) to minimize client-side bundle size while delivering dynamic, interactive UI.
+- **Micro-Interactions**: Powered by `framer-motion`, every hover, transition, and loading state is choreographed to feel fluid and premium.
+- **Glassmorphism Design System**: A custom Tailwind CSS implementation that uses backdrop-blur, variable transparency, and noise textures to create a deep, modern aesthetic.
 
-<table align="center">
-  <tr>
-    <td align="center" width="50%">
-        <h3>Unit Pulse & E2E Flow Checks</h3>
-        <p>Our custom-built <a href="src/app/admin/tests/page.tsx">Testing Lab</a> integrates <b>Vitest</b> and <b>Playwright</b> directly into the application dashboard.</p>
-        <ul>
-            <li><b>One-Click Execution</b>: Run the full 100+ test suite with a single button press.</li>
-            <li><b>Live Streaming Logs</b>: Watch unit tests pass in real-time via server-sent events (SSE).</li>
-            <li><b>Network Interception</b>: We use advanced request interception to simulate API failures and maintenance modes, ensuring our frontend is bulletproof.</li>
-        </uL>
-    </td>
-    <td align="center">
-      <img src="https://img.icons8.com/isometric/512/experimental.png" width="100" />
-    </td>
-  </tr>
-</table>
-
-### 🎛️ **Operations Command Center**
-The **Operations Panel** gives administrators god-mode control over the application state:
-- **Emergency Maintenance Mode**: Instantly lock the application and display a sitewide maintenance banner. Useful during critical database migrations.
-- **Token Analytics**: Real-time tracking of Gemini AI interactions, including estimated costs, token usage per model, and latency metrics.
-- **System Broadcasts**: Push active "Notices" (Info, Warning, Critical) to all connected clients instantly.
-
-### 🔍 **Quality Assurance at Scale**
-We maintain a strict **100% Test Pass Rate** policy.
-- **16 Unit/Integration Tests**: Validating core logic, date parsing, and weather matching.
-- **5 End-to-End Flows**: Simulating a complete user journey from login to outfit recommendation.
-- **Strict Mode Compliance**: Our E2E tests enforce strict accessibility and selector uniqueness to guarantee a high-quality UI.
+### **Backend Layer (The Intelligence)**
+- **Server Actions**: We bypass traditional API routes for direct, type-safe mutations from the client to the database/AI services.
+- **Edge Routing**: Critical logic runs close to the user, ensuring sub-100ms latency for initial renders.
+- **Supabase (BaaS)**: Managed PostgreSQL provides robust relational data storage with Row Level Security (RLS) policies baked into the schema.
 
 ---
 
-## 🛠️ Modern Tech Stack
+## 🧩 Core Intelligence Engine
 
-<table align="center">
-  <tr>
-    <td align="center" width="200">
-      <b>Frontend</b><br />
-      Next.js 15 (App)<br />
-      React 19<br />
-      Framer Motion<br />
-      Lucide Icons
-    </td>
-    <td align="center" width="200">
-      <b>Backend / AI</b><br />
-      Gemini 2.5 Flash Lite<br />
-      Tomorrow.io API<br />
-      Node.js Runtime<br />
-      Server Actions
-    </td>
-    <td align="center" width="200">
-      <b>Infrastructure</b><br />
-      Supabase (PostgreSQL)<br />
-      Auth0 Authentication<br />
-      Vercel Hosting<br />
-      TypeScript 5
-    </td>
-  </tr>
-</table>
+Stratus operates on a three-phase intelligence pipeline: **Extract → Harmonize → Generate**.
+
+### 1. AI-Driven Schedule Extraction (Gemini 2.5 Flash Lite)
+Traditional OCR is brittle. Stratus uses **Multimodal LLMs** to "see" your schedule like a human does.
+- **Visual Parsing**: Upload a blurry photo or a complex PDF grid. The model identifies days, times, and locations based on visual layout, not just text scraping.
+- **Fuzzy Logic Correction**: It inferentially corrects typos (e.g., "MTH 101" -> "Math 101") and resolves partial time formats (e.g., "2-4" -> "14:00 - 16:00").
+- **Security**: Files are processed in-memory and never permanently stored unless explicitly saved by the user.
+
+### 2. Temporal Weather Harmonization (Tomorrow.io)
+City-wide forecasts are useless for a student walking across a 500-acre campus.
+- **Geospatial Precision**: We map every supported university campus to exact latitude/longitude coordinates.
+- **Temporal Slicing**: We fetch 24-hour hourly forecasts including temperature, wind chill ("RealFeel"), humidity, and precipitation probability.
+- **The Matching Algorithm**: Our custom algorithm iterates through your parsed classes and "locks in" the weather conditions specifically for your commute times (15 mins before/after class).
+
+### 3. Generative Attire Reasoning (Context-Aware LLM)
+This is the "Brain" of Stratus. It doesn't just output "Wear a coat."
+- **Layering Strategy**: It analyzes the delta between your coldest outdoor walk and your heated lecture hall. If the variance is >15°F, it suggests removable layers.
+- **Material Awareness**: It recommends specific materials (e.g., "Gore-Tex for high wind," "Cotton for breathable indoor comfort").
+- **Master Recommendation**: It synthesizes the entire day's volatility into a single "Strategy" (e.g., "The Morning Commuter Strategy") so you don't have to micromanage.
 
 ---
 
-## ⚡ Quick Start
+## 🛡️ Enterprise Operations Suite
+
+Stratus includes a production-grade **Operations Command Center** (`/admin/operations`), giving Engineering Leads absolute control over the platform's health and resources.
+
+### **🎛️ Dynamic Logic Controllers**
+- **Maintenance Circuit Breaker**: Instantly sever client access to AI features if an upstream provider goes down. This renders a global "System Maintenance" banner and prevents cascading failures.
+- **Feature Flagging**: Toggle experimental features (like "Live Weather" vs "Cached Weather") in real-time without redeploying.
+
+### **📊 Cost & Token Telemetry**
+- **Live Usage Tracking**: We monitor every Gemini API call. The dashboard visualizes:
+  - **Input/Output Tokens**: To optimize prompt engineering costs.
+  - **Latency Distribution**: To identify slow model responses.
+  - **Estimated Burn Rate**: Real-time dollar cost estimation based on current traffic.
+- **Model Efficiency**: Compare usage stats between `gemini-1.5-flash` and `gemini-2.0-flash-exp` to make data-driven infrastructure decisions.
+
+### **📢 Broadcast System**
+- **System Notices**: Push persistent alerts to all connected clients.
+  - **Types**: Info, Warning, Critical, Maintenance.
+  - **Scheduling**: Set expiration times for notices so they auto-clear after an incident is resolved.
+
+---
+
+## 🧪 The Quality Assurance Lab
+
+We believe that **reliability is a feature**. Stratus maintains a **100% Test Pass Rate** policy, enforced by a custom-built In-App Testing Lab (`/admin/tests`).
+
+### **Continuous Integration Dashboard**
+Developers can execute the entire test suite directly from the Production UI to verify live environment health.
+
+| Suite Type | Scope | Technology | Coverage Targets |
+|:--- |:--- |:--- |:--- |
+| **Unit Pulse** | Utility Logic | **Vitest** | Date calculations, Type validation, Data parsers. |
+| **E2E Flow** | User Journey | **Playwright** | Full browser simulation: Login $\to$ Analysis $\to$ Result. |
+| **Network** | Integration | **MSW / Route** | API Response structures, Error handling. |
+
+### **Advanced Testing Patterns**
+- **Network Interception**: Our E2E tests do not rely on flaky backend state. We use `page.route` to intercept network requests at the browser level, forcing the UI to handle 404s, 500s, and Maintenance Modes deterministically.
+- **Visual Regression**: We inspect DOM elements for exact text matches, ensuring the AI's "Creative" output doesn't break the UI layout.
+- **Strict Mode Compliance**: All selectors use strict accessibility locators (e.g., `getByRole`, `getByLabel`), ensuring the app remains accessible to screen readers.
+
+---
+
+## 🔐 Security & Compliance
+
+Stratus handles sensitive user data (location habits, schedules). We treat security as paramount.
+
+- **Authentication**: **Auth0** handles identity management (OIDC compliant). We never touch passwords.
+- **Database Security**:
+  - **RLS (Row Level Security)**: Every query to Supabase is filtered by the standard `auth.uid()` policy. A user physically *cannot* fetch another user's schedule, even if they manipulate the API client.
+  - **Policy Enforcement**: `SELECT`, `INSERT`, `UPDATE` policies are strictly defined in `SECURITY_RLS_POLICIES.sql`.
+- **Environment Isolation**: API Keys (Gemini, Tomorrow.io) are kept server-side. The client never sees a raw API token.
+
+---
+
+## 🚀 Quick Start Guide
 
 ### 1. Requirements
-Ensure you have **Node.js 18+** and **npm** installed.
+- Node.js 18+ (LTS Recommended)
+- npm or pnpm
+- A Google Cloud Project (for Gemini API)
+- A Supabase Project
 
-### 2. Setup
+### 2. Installation
 ```bash
+# Clone the repository
 git clone https://github.com/soroushrf/stratus.git
+
+# Enter the stratosphere
 cd stratus
+
+# Install dependencies like a pro
 npm install
 ```
 
-### 3. Environment Variables
-Create a `.env` file with the following:
+### 3. Configuration
+Create a `.env` file in the root. Do not commit this file.
 ```env
-# AI & Weather
-GEMINI_API_KEY="your_key"
-WEATHER_API_KEY="your_tomorrow_io_key"
-USE_LIVE_WEATHER="true"
+# --- Intelligence Core ---
+GEMINI_API_KEY="AIzaSy..."
+WEATHER_API_KEY="wXyZ..."
 
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL="your_url"
-NEXT_PUBLIC_SUPABASE_ANON_KEY="your_anon_key"
-SUPABASE_SERVICE_ROLE_KEY="your_role_key"
+# --- Database Layer ---
+NEXT_PUBLIC_SUPABASE_URL="https://xyz.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJhh..."
+SUPABASE_SERVICE_ROLE_KEY="eyJhb..."
 
-# Auth0
-AUTH0_SECRET='your_secret'
+# --- Identity Layer ---
+AUTH0_SECRET='long_random_string'
 AUTH0_BASE_URL='http://localhost:3000'
-AUTH0_ISSUER_BASE_URL='https://your-tenant.auth0.com'
-AUTH0_CLIENT_ID='your_client_id'
-AUTH0_CLIENT_SECRET='your_client_secret'
+AUTH0_ISSUER_BASE_URL='https://dev-xyz.us.auth0.com'
+AUTH0_CLIENT_ID='abc...'
+AUTH0_CLIENT_SECRET='123...'
 ```
 
-### 4. Develop
+### 4. Launch
 ```bash
+# Ignite the development server
 npm run dev
 ```
+Visit `http://localhost:3000` to begin the experience.
 
 ---
 
-## 🗺️ Progress & Roadmap
+## �️ Roadmap
 
-- [x] **Phase 1**: Core Setup & Tech Selection
-- [x] **Phase 2**: AI Schedule Extraction (PDF/Image)
-- [x] **Phase 3**: Tomorrow.io API Integration
-- [x] **Phase 4**: Generative Styling Logic
-- [x] **Phase 5**: User Accounts & Cloud Profiles (Supabase + Auth0)
-- [x] **Phase 6**: Name Sync & UX Polish
-- [ ] **Phase 7**: Social Sharing & Style History
-- [ ] **Phase 8**: Native Mobile Wrapper (Capacitor)
+Stratus is evolving. Here is our flight path for the next fiscal quarter:
 
----
-
-## 🤝 Contribution Strategy
-
-We follow a **Structured Git Flow**:
-
-- `master`: **Production Gold**. Fully tested and stable.
-- `main`: **Beta Staging**. Where features go to be validated.
-- `backend-core`: API, Services, and Database logic.
-- `frontend-ui`: Component design and state management.
+- [x] **Phase 1: Foundation**: Architecture setup, Next.js 15 integration.
+- [x] **Phase 2: The Eye**: Multimodal Schedule Extraction (PDF/Image).
+- [x] **Phase 3: The Atmosphere**: Tomorrow.io API integration with localized weather.
+- [x] **Phase 4: The Brain**: Generative Styling Logic & Context Engine.
+- [x] **Phase 5: Identity**: User Accounts, Cloud Profiles (Supabase + Auth0).
+- [x] **Phase 6: Polish**: Experience refinement, Micro-interactions.
+- [ ] **Phase 7: Social**: "Outfit Checks", Social Sharing, Style History.
+- [ ] **Phase 8: Omnipresence**: Native Mobile Wrapper (Capacitor/React Native).
 
 ---
 
 <div align="center">
-  <p>Crafted with ❤️ and ☕ by the <b>Stratus Team</b>.</p>
-  <p>Built on the bleeding edge of the <b>Google Cloud & Vercel Ecosystem</b>.</p>
+  <p><b>Stratus</b> is open-source software licensed under the MIT License.</p>
+  <p>Crafted with obsession by the Stratus Engineering Team.</p>
 </div>
