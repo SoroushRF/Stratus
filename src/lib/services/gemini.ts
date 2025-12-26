@@ -10,6 +10,12 @@ export const extractSchedule = async (
 ): Promise<ParsedClass[]> => {
   const startTime = Date.now();
   const slug = 'schedule-parser';
+  
+  // 1. Check Maintenance Mode
+  if (await AIConfigService.isMaintenanceMode()) {
+    throw new Error("System is currently under maintenance. Please try again later.");
+  }
+
   const modelName = await AIConfigService.getModel(slug);
   const prompt = await AIConfigService.getPrompt(slug);
 
@@ -27,6 +33,8 @@ export const extractSchedule = async (
     ]);
 
     const text = result.response.text();
+    const usage = result.response.usageMetadata;
+    
     const jsonMatch = text.match(/\[[\s\S]*\]/);
     const classes = jsonMatch ? (JSON.parse(jsonMatch[0]) as ParsedClass[]) : [];
 
@@ -36,7 +44,9 @@ export const extractSchedule = async (
       rawOutput: text,
       status: 'success',
       latencyMs: Date.now() - startTime,
-      modelUsed: modelName
+      modelUsed: modelName,
+      prompt_tokens: usage?.promptTokenCount,
+      completion_tokens: usage?.candidatesTokenCount
     });
 
     return classes;
@@ -52,6 +62,10 @@ export const extractSchedule = async (
       modelUsed: modelName
     });
 
-    throw new Error("Failed to parse schedule data. Please check your API key and file.");
+    throw new Error(
+      (error as Error).message.includes("maintenance") 
+        ? (error as Error).message 
+        : "Failed to parse schedule data. Please check your API key and file."
+    );
   }
 };

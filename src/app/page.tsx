@@ -18,6 +18,17 @@ import AnimatedButton from "@/components/ui/AnimatedButton";
 import CampusSelector from "@/components/ui/CampusSelector";
 import FileUpload from "@/components/ui/FileUpload";
 import WeatherSummary from "@/components/ui/WeatherSummary";
+import SystemNoticeBanner from "@/components/ui/SystemNoticeBanner";
+
+interface SystemNotice {
+    id: string;
+    title: string;
+    message: string;
+    type: "info" | "warning" | "critical" | "maintenance";
+    is_active: boolean;
+    expires_at: string | null;
+    created_at: string;
+}
 
 export default function Home() {
     const router = useRouter();
@@ -32,6 +43,8 @@ export default function Home() {
     const [universities, setUniversities] = useState<University[]>([]);
     const [universitiesLoading, setUniversitiesLoading] = useState(true);
     const [collapsedClasses, setCollapsedClasses] = useState<Set<number>>(new Set());
+    const [systemNotice, setSystemNotice] = useState<SystemNotice | null>(null);
+    const [noticeLoading, setNoticeLoading] = useState(true);
     
     // Two-tier selection: University → Campus
     const [selectedUniversity, setSelectedUniversity] = useState<string>(""); // e.g., "University of Toronto"
@@ -44,6 +57,26 @@ export default function Home() {
     const [usesSavedSchedule, setUsesSavedSchedule] = useState(true); // Toggle between saved/upload
     const [hasSavedProfile, setHasSavedProfile] = useState(false);
     const [savedScheduleFileName, setSavedScheduleFileName] = useState<string | null>(null);
+
+    // Load system notices
+    useEffect(() => {
+        const loadNotices = async () => {
+            try {
+                const res = await fetch('/api/notices/active');
+                if (res.ok) {
+                    const { data } = await res.json();
+                    if (data && data.length > 0) {
+                        setSystemNotice(data[0]); // Show highest priority notice
+                    }
+                }
+            } catch (err) {
+                console.error('Error loading system notices:', err);
+            } finally {
+                setNoticeLoading(false);
+            }
+        };
+        loadNotices();
+    }, []);
 
     // Load universities from DB with JSON fallback
     useEffect(() => {
@@ -417,6 +450,20 @@ export default function Home() {
                         AI-Powered Weather & Attire Intelligence
                     </p>
                 </motion.div>
+
+                {/* System Notice Banner */}
+                {!noticeLoading && systemNotice && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="mb-6"
+                    >
+                        <SystemNoticeBanner 
+                            notice={systemNotice} 
+                            onDismiss={() => setSystemNotice(null)}
+                        />
+                    </motion.div>
+                )}
 
                 <AnimatePresence mode="wait">
                     {status !== "success" ? (

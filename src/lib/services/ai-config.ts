@@ -83,6 +83,20 @@ class AIConfigService {
     return cache?.configs[key];
   }
 
+  static async isMaintenanceMode(): Promise<boolean> {
+    const val = await this.getConfig('maintenance_mode');
+    return val === 'true' || val === true;
+  }
+
+  static async incrementWeatherUsage() {
+    try {
+      // Direct increment in DB to stay accurate
+      await supabaseAdmin.rpc('increment_weather_usage');
+    } catch (error) {
+      console.error('Failed to increment weather usage:', error);
+    }
+  }
+
   static async logExecution(logData: {
     slug: string;
     inputType?: string;
@@ -92,6 +106,9 @@ class AIConfigService {
     errorMessage?: string;
     latencyMs?: number;
     modelUsed?: string;
+    prompt_tokens?: number;
+    completion_tokens?: number;
+    user_id?: string;
   }) {
     try {
       await supabaseAdmin.from('ai_logs').insert(logData);

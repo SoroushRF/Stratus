@@ -11,6 +11,15 @@ export async function generateAttireRecommendation(
   classInfo: ParsedClass,
   weather: HourlyForecast | null
 ): Promise<AttireRecommendation> {
+  // 1. Check Maintenance Mode
+  if (await AIConfigService.isMaintenanceMode()) {
+    return {
+      recommendation: "System is under maintenance. Detailed AI suggestions are temporarily limited.",
+      reasoning: "Maintenance mode active.",
+      accessories: [],
+      priority: "suggested",
+    };
+  }
   // Calculate class duration
   const [startHour, startMin] = classInfo.startTime.split(":").map(Number);
   const [endHour, endMin] = classInfo.endTime.split(":").map(Number);
@@ -48,6 +57,7 @@ export async function generateAttireRecommendation(
   try {
     const result = await model.generateContent(prompt);
     const text = result.response.text();
+    const usage = result.response.usageMetadata;
     
     console.log("Gemini Response:", text); // Debug log
     
@@ -65,7 +75,9 @@ export async function generateAttireRecommendation(
       slug,
       status: 'success',
       latencyMs: Date.now() - startTime,
-      modelUsed: modelName
+      modelUsed: modelName,
+      prompt_tokens: usage?.promptTokenCount,
+      completion_tokens: usage?.candidatesTokenCount
     });
     
     // Validate structure
@@ -175,6 +187,16 @@ export function getBasicAttireRecommendation(
 export async function generateMasterRecommendation(
   recommendations: ClassAttireRecommendation[]
 ): Promise<MasterRecommendation> {
+  // 1. Check Maintenance Mode
+  if (await AIConfigService.isMaintenanceMode()) {
+    return {
+      baseOutfit: "Comfortable campus attire",
+      layeringStrategy: "System is in maintenance - using simplified recommendations.",
+      essentialAccessories: [],
+      reasoning: "Maintenance mode active.",
+      weatherRange: { minTemp: 0, maxTemp: 0, conditions: [] },
+    };
+  }
   if (recommendations.length === 0) {
     return {
       baseOutfit: "Comfortable campus attire",
@@ -249,6 +271,7 @@ ${i + 1}. ${r.class.name} (${r.class.startTime})
   try {
     const result = await model.generateContent(prompt);
     const text = result.response.text();
+    const usage = result.response.usageMetadata;
     
     console.log("Master Recommendation Response:", text); // Debug log
     
@@ -265,7 +288,9 @@ ${i + 1}. ${r.class.name} (${r.class.startTime})
       slug,
       status: 'success',
       latencyMs: Date.now() - startTimeExec,
-      modelUsed: modelName
+      modelUsed: modelName,
+      prompt_tokens: usage?.promptTokenCount,
+      completion_tokens: usage?.candidatesTokenCount
     });
     
     return {

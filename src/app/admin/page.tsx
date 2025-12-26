@@ -43,11 +43,11 @@ const adminModules = [
         phase: 2
     },
     {
-        title: "System Health",
-        description: "Monitor API quotas (Tomorrow.io, Gemini) and server logs.",
+        title: "Operations & Health",
+        description: "Monitor API quotas, manage maintenance mode, and broadcast system notices.",
         icon: Activity,
         color: "text-amber-400",
-        stats: "All Clear",
+        stats: "Control Room",
         phase: 4
     }
 ];
@@ -198,10 +198,14 @@ export default function AdminDashboard() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.1 }}
                         onClick={() => {
-                            if (module.title === "University Database") {
+                            if (module.title === "User Management") {
+                                window.location.href = "/admin/users";
+                            } else if (module.title === "University Database") {
                                 window.location.href = "/admin/universities";
                             } else if (module.title === "AI Logic Control") {
                                 window.location.href = "/admin/ai";
+                            } else if (module.title === "Operations & Health") {
+                                window.location.href = "/admin/operations";
                             }
                         }}
                     >
