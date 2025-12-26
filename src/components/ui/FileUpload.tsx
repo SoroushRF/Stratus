@@ -47,7 +47,7 @@ export default function FileUpload({ onFileSelect, uploadedFileName, disabled = 
         >
             <input
                 type="file"
-                accept=".pdf,.png,.jpg,.jpeg"
+                accept=".pdf,.png,.jpg,.jpeg,.txt"
                 onChange={handleFileInput}
                 disabled={disabled}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
@@ -63,7 +63,7 @@ export default function FileUpload({ onFileSelect, uploadedFileName, disabled = 
                     <>
                         <Upload className="w-12 h-12 text-white/40" />
                         <p className="text-white/70">Drop your schedule here or click to browse</p>
-                        <p className="text-xs text-white/40">Supports PDF, PNG, JPG</p>
+                        <p className="text-xs text-white/40">Supports PDF, PNG, JPG, TXT</p>
                     </>
                 )}
             </div>

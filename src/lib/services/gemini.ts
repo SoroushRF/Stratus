@@ -10,7 +10,7 @@ export const extractSchedule = async (
   const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
 
   const prompt = `
-    Analyze the provided image or PDF of a schedule and extract the classes.
+    Analyze the provided image, PDF, or text file of a schedule and extract the classes.
     
     Return a JSON array of objects with this schema:
     [{

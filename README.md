@@ -1,4 +1,5 @@
 <div align="center">
+  <img src="https://img.icons8.com/isometric/512/cloud.png" width="128" height="128" alt="Stratus Logo" />
   <br />
   <h1>🌥️ S T R A T U S</h1>
   <h3>AI-Powered Weather & Attire Intelligence</h3>
@@ -7,124 +8,144 @@
     <a href="https://nextjs.org"><img src="https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js" alt="Next.js" /></a>
     <a href="https://react.dev"><img src="https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react" alt="React" /></a>
     <a href="https://www.typescriptlang.org"><img src="https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript" alt="TypeScript" /></a>
-    <a href="https://tailwindcss.com"><img src="https://img.shields.io/badge/Tailwind-CSS-38B2AC?style=for-the-badge&logo=tailwind-css" alt="Tailwind" /></a>
+    <a href="https://supabase.com"><img src="https://img.shields.io/badge/Supabase-DB-3FCF8E?style=for-the-badge&logo=supabase" alt="Supabase" /></a>
+    <a href="https://auth0.com"><img src="https://img.shields.io/badge/Auth0-Security-EB5424?style=for-the-badge&logo=auth0" alt="Auth0" /></a>
     <a href="https://deepmind.google/technologies/gemini/"><img src="https://img.shields.io/badge/Gemini-AI-8E75B2?style=for-the-badge&logo=google-gemini" alt="Gemini AI" /></a>
   </p>
 
-  <p><i>Your personal AI stylist that knows your schedule and the weather.</i></p>
+  <p><i>Building the future of personal preparation through intelligent context.</i></p>
   
   <br />
 </div>
 
 <hr />
 
-## 🌟 Overview
+## 🌟 Vision
 
-**Stratus** is a next-generation utility app that redefines how students and professionals prepare for their day. By intelligently combining **class schedules**, **real-time weather data**, and **generative AI**, Stratus provides hyper-personalized attire recommendations.
+**Stratus** turns your chaotic morning routine into a streamlined, AI-optimized experience. By bridging the gap between your **class schedule** and **micro-local weather forecasts**, Stratus eliminates the guesswork of getting dressed. 
 
-Instead of just checking the weather, Stratus tells you exactly *what to wear* based on where you need to be and when, ensuring you're never caught freezing in a lecture hall or overheating on a walk across campus.
-
----
-
-## 🚀 Key Features
-
-### 📅 **Intelligent Schedule Parsing**
-- **AI-Driven Extraction**: Upload a PDF or image of your class schedule, and our Gemini-powered engine instantly extracts course names, times, and locations.
-- **Privacy First**: Schedule processing happens securely server-side.
-
-### 🌤️ **Context-Aware Weather Analysis**
-- **Hyper-Local Forecasts**: Fetches hourly weather data specifically for your university campus.
-- **Micro-Weather Matching**: Maps forecast data precisely to each class time, noting temperature, precipitation, and wind chill.
-
-### 👗 **AI Stylist Engine**
-- **Dynamic Recommendations**: Generates specific outfit advice for every single class (e.g., "Layer up for your 8 AM chem lab, shed the jacket for noon history").
-- **Master Outfit Synthesis**: Creates a single "Outfit of the Day" strategy that works across all your day's varying conditions.
-- **Reasoning Engine**: Explains *why* a certain outfit is recommended (e.g., "High humidity and mild temps suggest breathable fabrics").
-
-### 🎨 **Modern User Experience**
-- **Sleek Dashboard**: A minimal, high-aesthetic interface focused on clarity and utility.
-- **Detailed Viz**: Visual breakdown of weather conditions throughout the day.
-- **Interactive Parsing**: Review and confirm your schedule data before analysis.
+No more checking three different apps. No more carrying a jacket you won't need. Just pure, personalized intelligence that knows exactly what your day looks like.
 
 ---
 
-## 🛠️ Technology Stack
+## 🚀 Premium Features
 
-**Frontend**
-*   **Framework**: Next.js 15 (App Router)
-*   **Styling**: Tailwind CSS & Glassmorphism design principles
-*   **State**: React Hooks & Server Actions
-*   **Localization**: Date & Time utilities
+### 📅 **AI Schedule Intelligence**
+- **Multimodal Extraction**: Upload a PDF, a photo, or even a raw **.txt file** of your messy schedule. Our **Gemini 2.5 Flash Lite** engine extracts course names, times, and exact campus locations with surgical precision.
+- **Manual Control**: Add, edit, or delete classes manually with a sleek, responsive interface.
+- **Top-of-List Priority**: New additions always appear at the top for immediate focus.
 
-**Backend & AI**
-*   **Runtime**: Node.js (Serverless on Vercel)
-*   **AI Model**: Google Gemini 2.5 Flash Lite
-*   **Weather Provider**: OpenWeatherMap OneCall 3.0 (Planned/Hybrid)
-*   **Database**: SQLite (via Prisma) for future user preferences
+### 🌤️ **Hyper-Local Context**
+- **Campus-Specific Weather**: We don't just give you "city weather." We fetch hourly data for your specific university campus using the **Tomorrow.io API**.
+- **Contextual Matching**: Our engine maps weather conditions (temp, precipitation, wind) to your exact class times, alerting you to changes *during* your transit.
 
-**Infrastructure**
-*   **Deployment**: Vercel
-*   **Version Control**: Git / GitHub
+### 👗 **Generative Styling Engine**
+- **Micro-Recommendations**: Get a tailored outfit suggestion for *every single class* based on transitions between indoors and outdoors.
+- **Master Strategy**: A synthesized "Outfit of the Day" that covers the volatility of your entire schedule.
+- **Reasoning**: Understand the *why* behind every layer suggested.
 
----
-
-## ⚡ Getting Started
-
-1.  **Clone the Repository**
-    ```bash
-    git clone https://github.com/soroushrf/stratus.git
-    cd stratus
-    ```
-
-2.  **Install Dependencies**
-    ```bash
-    npm install
-    ```
-
-3.  **Environment Setup**
-    Create a `.env` file in the root directory:
-    ```env
-    # Required for Analysis
-    GEMINI_API_KEY="your_google_gemini_key"
-    
-    # Optional / Future
-    OPENWEATHER_API_KEY="your_openweather_key"
-    USE_LIVE_WEATHER="false"
-    ```
-
-4.  **Run Development Server**
-    ```bash
-    npm run dev
-    ```
-    Visit `http://localhost:3000` to see the app live.
+### 👤 **Account & Personalization**
+- **Seamless Auth**: Powered by **Auth0** for enterprise-grade security.
+- **Cloud Sync**: Your university preferences and schedules are saved in **Supabase**, ready on any device.
+- **Profile Mastery**: Customize your display name and manage your data with a few clicks.
 
 ---
 
-## 🗺️ Roadmap
+## 🛠️ Modern Tech Stack
 
-| Phase | Status | Description |
-| :--- | :---: | :--- |
-| **Phase 1** | ✅ | **Core Setup**: Repo initialization, tech stack selection. |
-| **Phase 2** | ✅ | **Schedule Parsing**: PDF/Image extraction pipeline. |
-| **Phase 3** | ✅ | **Weather Integration**: Dummy data & matching logic. |
-| **Phase 4** | ✅ | **AI Stylist**: Recommendation engine & master synthesis. |
-| **Phase 5** | 🔄 | **UI Polish**: Collapsible cards, detailed weather tables. |
-| **Phase 6** | 📅 | **Live Data**: Full OpenWeatherMap integration. |
-| **Phase 7** | 🔮 | **User Accounts**: Save schedules and preferences. |
+<table align="center">
+  <tr>
+    <td align="center" width="200">
+      <b>Frontend</b><br />
+      Next.js 15 (App)<br />
+      React 19<br />
+      Framer Motion<br />
+      Lucide Icons
+    </td>
+    <td align="center" width="200">
+      <b>Backend / AI</b><br />
+      Gemini 2.5 Flash Lite<br />
+      Tomorrow.io API<br />
+      Node.js Runtime<br />
+      Server Actions
+    </td>
+    <td align="center" width="200">
+      <b>Infrastructure</b><br />
+      Supabase (PostgreSQL)<br />
+      Auth0 Authentication<br />
+      Vercel Hosting<br />
+      TypeScript 5
+    </td>
+  </tr>
+</table>
 
 ---
 
-## 🤝 Contribution Workflow
+## ⚡ Quick Start
 
-We follow a strict **Git Flow** strategy to ensure stability.
+### 1. Requirements
+Ensure you have **Node.js 18+** and **npm** installed.
 
-*   `master`: **Production**. Live code only. No direct commits.
-*   `main`: **Staging**. Integration testing area for frontend & backend.
-*   `backend-dev`: Core logic, API, and services development.
-*   `frontend-ui`: Styling, components, and UX enhancements.
+### 2. Setup
+```bash
+git clone https://github.com/soroushrf/stratus.git
+cd stratus
+npm install
+```
+
+### 3. Environment Variables
+Create a `.env` file with the following:
+```env
+# AI & Weather
+GEMINI_API_KEY="your_key"
+WEATHER_API_KEY="your_tomorrow_io_key"
+USE_LIVE_WEATHER="true"
+
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL="your_url"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="your_anon_key"
+SUPABASE_SERVICE_ROLE_KEY="your_role_key"
+
+# Auth0
+AUTH0_SECRET='your_secret'
+AUTH0_BASE_URL='http://localhost:3000'
+AUTH0_ISSUER_BASE_URL='https://your-tenant.auth0.com'
+AUTH0_CLIENT_ID='your_client_id'
+AUTH0_CLIENT_SECRET='your_client_secret'
+```
+
+### 4. Develop
+```bash
+npm run dev
+```
+
+---
+
+## 🗺️ Progress & Roadmap
+
+- [x] **Phase 1**: Core Setup & Tech Selection
+- [x] **Phase 2**: AI Schedule Extraction (PDF/Image)
+- [x] **Phase 3**: Tomorrow.io API Integration
+- [x] **Phase 4**: Generative Styling Logic
+- [x] **Phase 5**: User Accounts & Cloud Profiles (Supabase + Auth0)
+- [x] **Phase 6**: Name Sync & UX Polish
+- [ ] **Phase 7**: Social Sharing & Style History
+- [ ] **Phase 8**: Native Mobile Wrapper (Capacitor)
+
+---
+
+## 🤝 Contribution Strategy
+
+We follow a **Structured Git Flow**:
+
+- `master`: **Production Gold**. Fully tested and stable.
+- `main`: **Beta Staging**. Where features go to be validated.
+- `backend-core`: API, Services, and Database logic.
+- `frontend-ui`: Component design and state management.
 
 ---
 
 <div align="center">
-  <p>Built with ☕ and <a href="https://nextjs.org">Next.js</a> by the Stratus Team.</p>
+  <p>Crafted with ❤️ and ☕ by the <b>Stratus Team</b>.</p>
+  <p>Built on the bleeding edge of the <b>Google Cloud & Vercel Ecosystem</b>.</p>
 </div>
