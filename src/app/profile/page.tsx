@@ -5,8 +5,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { ParsedClass, University, Day } from "@/types";
 import universitiesData from "@/lib/data/universities.json";
-import { motion } from "framer-motion";
-import { Save, X, Plus, Trash2, User, MapPin, Calendar, ArrowLeft } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Save, X, Plus, Trash2, User, MapPin, Calendar, ArrowLeft, AlertTriangle, AlertCircle } from "lucide-react";
 import GlassCard from "@/components/ui/GlassCard";
 import AnimatedButton from "@/components/ui/AnimatedButton";
 import FileUpload from "@/components/ui/FileUpload";
@@ -16,7 +16,7 @@ import Link from "next/link";
 const universities = universitiesData as University[];
 
 export default function ProfilePage() {
-    const { user, isLoading: authLoading } = useAuth();
+    const { user, isLoading: authLoading, logout, refreshUser } = useAuth();
     const router = useRouter();
     
     const [firstName, setFirstName] = useState("");
@@ -26,6 +26,9 @@ export default function ProfilePage() {
     const [classes, setClasses] = useState<ParsedClass[]>([]);
     const [saving, setSaving] = useState(false);
     const [uploading, setUploading] = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [deleting, setDeleting] = useState(false);
+    const [showErrors, setShowErrors] = useState(false);
     const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
     // Redirect if not logged in
@@ -65,21 +68,49 @@ export default function ProfilePage() {
 
             // Load user info
             const userRes = await fetch("/api/user/info");
+            let loadedFirstName = "";
+            let loadedLastName = "";
+            
             if (userRes.ok) {
                 const { user: userData } = await userRes.json();
                 if (userData) {
-                    setFirstName(userData.first_name || "");
-                    setLastName(userData.last_name || "");
+                    loadedFirstName = userData.first_name || "";
+                    loadedLastName = userData.last_name || "";
                 }
             }
+            
+            // If no name in database, try to parse from Auth0 name
+            if (!loadedFirstName && !loadedLastName && user?.name) {
+                const nameParts = user.name.split(' ');
+                if (nameParts.length >= 2) {
+                    loadedFirstName = nameParts[0];
+                    loadedLastName = nameParts.slice(1).join(' ');
+                } else if (nameParts.length === 1) {
+                    loadedFirstName = nameParts[0];
+                }
+            }
+            
+            // Set the final values
+            setFirstName(loadedFirstName);
+            setLastName(loadedLastName);
         } catch (err) {
             console.error("Error loading user data:", err);
         }
     };
 
     const handleSave = async () => {
-        setSaving(true);
         setMessage(null);
+        setShowErrors(false);
+
+        // Validation: Ensure all classes have names
+        const invalidClasses = classes.filter(cls => !cls.name.trim());
+        if (invalidClasses.length > 0) {
+            setShowErrors(true);
+            setMessage({ type: "error", text: "Please fix the highlighted errors below." });
+            return;
+        }
+
+        setSaving(true);
 
         try {
             // Save user info
@@ -89,7 +120,7 @@ export default function ProfilePage() {
                 body: JSON.stringify({ firstName, lastName }),
             });
 
-            // Save profile
+            // Save profile (university/campus)
             await fetch("/api/user/profile", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -111,6 +142,11 @@ export default function ProfilePage() {
                 });
             }
 
+            // Refresh auth session to update navbar name AFTER everything is saved
+            // This prevents the page from reloading old data from the DB 
+            // before the save operations above are complete.
+            await refreshUser();
+
             setMessage({ type: "success", text: "Profile saved successfully!" });
         } catch (err) {
             console.error("Error saving profile:", err);
@@ -122,7 +158,6 @@ export default function ProfilePage() {
 
     const addClass = () => {
         setClasses([
-            ...classes,
             {
                 name: "",
                 days: [Day.MONDAY],
@@ -130,6 +165,7 @@ export default function ProfilePage() {
                 endTime: "10:30",
                 location: "",
             },
+            ...classes,
         ]);
     };
 
@@ -196,6 +232,26 @@ export default function ProfilePage() {
             setMessage({ type: "error", text: "Error processing file. Please try again." });
         } finally {
             setUploading(false);
+        }
+    };
+
+    const handleDeleteAccount = async () => {
+        setDeleting(true);
+        try {
+            const res = await fetch("/api/user/delete", { method: "DELETE" });
+            if (res.ok) {
+                // Logout and redirect properly using the hook's logout function
+                await logout();
+            } else {
+                setMessage({ type: "error", text: "Failed to delete account. Please try again." });
+                setDeleting(false);
+                setShowDeleteConfirm(false);
+            }
+        } catch (err) {
+            console.error("Error deleting account:", err);
+            setMessage({ type: "error", text: "An error occurred. Please try again." });
+            setDeleting(false);
+            setShowDeleteConfirm(false);
         }
     };
 
@@ -421,20 +477,40 @@ export default function ProfilePage() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {classes.map((cls, index) => (
-                                        <tr key={index} className="border-b border-white/5">
-                                            <td className="py-3 px-2">
-                                                <input
-                                                    type="text"
-                                                    value={cls.name}
-                                                    onChange={(e) =>
-                                                        updateClass(index, "name", e.target.value)
-                                                    }
-                                                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                                    placeholder="CS 101"
-                                                />
-                                            </td>
-                                            <td className="py-3 px-2">
+                                    {classes.map((cls, index) => {
+                                        const isInvalid = showErrors && !cls.name.trim();
+                                        return (
+                                            <tr key={index} className="border-b border-white/5">
+                                                <td className="py-3 px-2">
+                                                    <div className="relative flex items-center">
+                                                        <input
+                                                            type="text"
+                                                            value={cls.name}
+                                                            onChange={(e) => {
+                                                                updateClass(index, "name", e.target.value);
+                                                                if (e.target.value.trim()) setShowErrors(false);
+                                                            }}
+                                                            className={`w-full px-3 py-2 bg-white/5 border rounded-lg text-white text-sm focus:outline-none focus:ring-2 transition-all ${
+                                                                isInvalid 
+                                                                    ? 'border-red-500 ring-red-500/20 focus:ring-red-500/50 pr-10' 
+                                                                    : 'border-white/10 focus:ring-primary/50'
+                                                            }`}
+                                                            placeholder="CS 101"
+                                                        />
+                                                        {isInvalid && (
+                                                            <div 
+                                                                className="absolute right-3 text-red-500 cursor-help group"
+                                                                title="Name is required"
+                                                            >
+                                                                <AlertCircle className="w-4 h-4" />
+                                                                <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block bg-red-600 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap z-20 shadow-xl">
+                                                                    Name is required
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                                <td className="py-3 px-2">
                                                 <div className="flex flex-wrap gap-1">
                                                     {[Day.MONDAY, Day.TUESDAY, Day.WEDNESDAY, Day.THURSDAY, Day.FRIDAY, Day.SATURDAY, Day.SUNDAY].map((day) => {
                                                         const shortDay = day.substring(0, 3);
@@ -496,7 +572,8 @@ export default function ProfilePage() {
                                                 </button>
                                             </td>
                                         </tr>
-                                    ))}
+                                    );
+                                })}
                                 </tbody>
                             </table>
                         </div>
@@ -535,6 +612,55 @@ export default function ProfilePage() {
                         <X className="w-5 h-5" />
                         Reset
                     </button>
+                </div>
+
+                {/* Delete Account Section */}
+                <div className="mt-12 pt-8 border-t border-white/10 flex flex-col items-center">
+                    <p className="text-white/40 text-sm mb-6 text-center">
+                        Warning: Deleting your account is permanent and cannot be undone. 
+                        All your saved schedules and preferences will be lost.
+                    </p>
+                    
+                    <div className="relative w-full max-w-xs flex flex-col items-center">
+                        <AnimatePresence>
+                            {showDeleteConfirm && (
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                                    exit={{ opacity: 0, scale: 0.9, y: 10 }}
+                                    className="absolute bottom-full mb-4 w-full bg-red-500/10 border border-red-500/20 backdrop-blur-xl p-4 rounded-xl z-10"
+                                >
+                                    <div className="flex flex-col items-center gap-3 text-center">
+                                        <AlertTriangle className="w-6 h-6 text-red-500" />
+                                        <p className="text-sm font-medium">Are you absolutely sure?</p>
+                                        <div className="flex gap-2 w-full">
+                                            <button
+                                                onClick={handleDeleteAccount}
+                                                disabled={deleting}
+                                                className="flex-1 py-2 bg-red-500 hover:bg-red-600 rounded-lg text-xs font-bold transition-colors disabled:opacity-50 cursor-pointer"
+                                            >
+                                                {deleting ? "Deleting..." : "Yes, Delete"}
+                                            </button>
+                                            <button
+                                                onClick={() => setShowDeleteConfirm(false)}
+                                                className="flex-1 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-xs font-bold transition-colors cursor-pointer"
+                                            >
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+
+                        <button
+                            onClick={() => setShowDeleteConfirm(!showDeleteConfirm)}
+                            className="px-6 py-3 border border-red-500/30 text-red-400 hover:bg-red-500/10 rounded-xl transition-all font-medium text-sm flex items-center gap-2 cursor-pointer"
+                        >
+                            <Trash2 className="w-4 h-4" />
+                            Delete Account
+                        </button>
+                    </div>
                 </div>
             </div>
         </main>

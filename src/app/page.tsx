@@ -43,6 +43,7 @@ export default function Home() {
     const [uploadedFile, setUploadedFile] = useState<{ base64: string; mimeType: string; name: string } | null>(null);
     const [dataLoaded, setDataLoaded] = useState(false); // Track if we've loaded saved data
     const [usesSavedSchedule, setUsesSavedSchedule] = useState(true); // Toggle between saved/upload
+    const [hasSavedProfile, setHasSavedProfile] = useState(false);
     const [savedScheduleFileName, setSavedScheduleFileName] = useState<string | null>(null);
 
     // Auto-load saved data when user logs in
@@ -52,20 +53,19 @@ export default function Home() {
         }
     }, [user, authLoading, dataLoaded]);
 
-    // Auto-save for first-time users only (when they don't have saved preferences yet)
-    // This ensures their first analysis saves their data
+    // Auto-save for first-time users only
+    // If they don't have a saved profile yet, save their first selection
     useEffect(() => {
-        if (user && !savedScheduleFileName && selectedUniversity && selectedCampus && dataLoaded) {
-            // First-time user with selections - save as their initial preferences
+        if (user && !hasSavedProfile && selectedUniversity && selectedCampus && dataLoaded) {
             saveInitialPreferences();
         }
-    }, [selectedUniversity, selectedCampus, user, savedScheduleFileName, dataLoaded]);
+    }, [selectedUniversity, selectedCampus, user, hasSavedProfile, dataLoaded]);
 
     const saveInitialPreferences = async () => {
-        if (!selectedUniversity || !selectedCampus) return;
+        if (!selectedUniversity || !selectedCampus || hasSavedProfile) return;
         
         try {
-            await fetch('/api/user/profile', {
+            const res = await fetch('/api/user/profile', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -73,7 +73,11 @@ export default function Home() {
                     campus: selectedCampus,
                 }),
             });
-            console.log('✅ Saved initial preferences');
+            
+            if (res.ok) {
+                console.log('✅ Saved initial preferences');
+                setHasSavedProfile(true); // Prevent further auto-saves
+            }
         } catch (err) {
             console.error('Error saving initial preferences:', err);
         }
@@ -85,9 +89,10 @@ export default function Home() {
             const profileRes = await fetch('/api/user/profile');
             if (profileRes.ok) {
                 const { profile } = await profileRes.json();
-                if (profile) {
-                    setSelectedUniversity(profile.university);
-                    setSelectedCampus(profile.campus);
+                if (profile && (profile.university || profile.campus)) {
+                    setSelectedUniversity(profile.university || "");
+                    setSelectedCampus(profile.campus || "");
+                    setHasSavedProfile(true);
                     console.log('✅ Loaded saved profile:', profile);
                 }
             }
@@ -412,20 +417,20 @@ export default function Home() {
                             className="space-y-6"
                         >
                             {/* Info boxes for logged-in users */}
-                            {user && !savedScheduleFileName && (
+                            {user && !hasSavedProfile && (
                                 <motion.div
                                     initial={{ opacity: 0, y: -10 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    className="p-4 bg-green-500/10 border border-green-500/20 rounded-xl"
+                                    className="p-4 bg-primary/10 border border-primary/20 rounded-xl"
                                 >
-                                    <p className="text-sm text-green-200">
-                                        👋 <strong>Welcome!</strong> Your selections will be automatically saved as your preferences. 
-                                        You can edit them anytime in your <a href="/profile" className="underline hover:text-green-100 font-semibold">Profile</a>.
+                                    <p className="text-sm text-primary-foreground/80">
+                                        👋 <strong>Welcome!</strong> Your first university selection will be automatically saved as your primary preference. 
+                                        You can manage this anytime in your <a href="/profile" className="underline hover:text-white font-semibold">Profile</a>.
                                     </p>
                                 </motion.div>
                             )}
                             
-                            {user && savedScheduleFileName && (
+                            {user && hasSavedProfile && (
                                 <motion.div
                                     initial={{ opacity: 0, y: -10 }}
                                     animate={{ opacity: 1, y: 0 }}
@@ -435,6 +440,35 @@ export default function Home() {
                                         💡 <strong>Quick Analysis:</strong> Changes here are temporary and won't affect your saved preferences. 
                                         To update your default settings, visit your <a href="/profile" className="underline hover:text-blue-100">Profile</a>.
                                     </p>
+                                </motion.div>
+                            )}
+
+                            {!user && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="p-4 bg-white/5 border border-white/10 rounded-xl"
+                                >
+                                    <div className="flex items-start gap-3">
+                                        <Sparkles className="w-5 h-5 text-yellow-400 shrink-0 mt-0.5" />
+                                        <div className="space-y-1">
+                                            <p className="text-sm text-white/80 font-medium">
+                                                Go unlimited with an account!
+                                            </p>
+                                            <p className="text-xs text-white/50 leading-relaxed">
+                                                Log in to save your university, campus, and full schedule permanently. 
+                                                You can still use Stratus as a guest right now, but your selections won't be saved for next time.
+                                            </p>
+                                            <div className="pt-2">
+                                                <a 
+                                                    href="/api/auth/login" 
+                                                    className="text-xs font-bold text-primary hover:text-primary/80 transition-colors flex items-center gap-1"
+                                                >
+                                                    Sign up or Login <LogIn className="w-3 h-3" />
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </motion.div>
                             )}
 
@@ -537,7 +571,7 @@ export default function Home() {
                                                     usesSavedSchedule
                                                         ? "bg-primary text-white"
                                                         : "bg-white/5 text-white/60 hover:bg-white/10"
-                                                } disabled:opacity-50 disabled:cursor-not-allowed`}
+                                                } disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer`}
                                             >
                                                 Use Saved Schedule
                                             </button>
@@ -548,7 +582,7 @@ export default function Home() {
                                                     !usesSavedSchedule
                                                         ? "bg-primary text-white"
                                                         : "bg-white/5 text-white/60 hover:bg-white/10"
-                                                } disabled:opacity-50 disabled:cursor-not-allowed`}
+                                                } disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer`}
                                             >
                                                 Upload New
                                             </button>

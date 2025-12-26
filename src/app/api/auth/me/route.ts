@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { supabaseAdmin } from '@/lib/supabase';
 
 export async function GET(request: NextRequest) {
   try {
@@ -17,15 +18,34 @@ export async function GET(request: NextRequest) {
     }
 
     // Decode the ID token (JWT) to get user info
-    // ID token format: header.payload.signature
     const idToken = session.id_token;
     const payload = idToken.split('.')[1];
     const decodedPayload = JSON.parse(Buffer.from(payload, 'base64').toString());
 
+    const userId = decodedPayload.sub;
+
+    // Fetch user from Supabase to get custom name
+    const { data: dbUser, error: dbError } = await supabaseAdmin
+      .from('users')
+      .select('first_name, last_name, name')
+      .eq('id', userId)
+      .single();
+
+    // Determine the name to show: DB First + Last, or DB Name, or Auth0 Name
+    let displayName = decodedPayload.name;
+    
+    if (dbUser) {
+      if (dbUser.first_name || dbUser.last_name) {
+        displayName = `${dbUser.first_name || ''} ${dbUser.last_name || ''}`.trim();
+      } else if (dbUser.name) {
+        displayName = dbUser.name;
+      }
+    }
+
     // Extract user information
     const user = {
-      sub: decodedPayload.sub,
-      name: decodedPayload.name,
+      sub: userId,
+      name: displayName,
       email: decodedPayload.email,
       picture: decodedPayload.picture,
       nickname: decodedPayload.nickname,
