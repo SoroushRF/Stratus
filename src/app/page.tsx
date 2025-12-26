@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from '@/hooks/useAuth';
 import { processSchedule, getWeatherForecastAction, generateAttireRecommendationsAction, generateMasterRecommendationAction } from "@/app/actions";
 import { ParsedClass, University, ClassAttireRecommendation, MasterRecommendation } from "@/types";
@@ -22,6 +23,7 @@ import WeatherSummary from "@/components/ui/WeatherSummary";
 const universities = universitiesData as University[];
 
 export default function Home() {
+    const router = useRouter();
     const { user, isLoading: authLoading } = useAuth();
     const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
     const [loadingStep, setLoadingStep] = useState<string>("");
@@ -40,6 +42,9 @@ export default function Home() {
     const [error, setError] = useState<string | null>(null);
     const [uploadedFile, setUploadedFile] = useState<{ base64: string; mimeType: string; name: string } | null>(null);
     const [dataLoaded, setDataLoaded] = useState(false); // Track if we've loaded saved data
+    const [usesSavedSchedule, setUsesSavedSchedule] = useState(true); // Toggle between saved/upload
+    const [hasSavedProfile, setHasSavedProfile] = useState(false);
+    const [savedScheduleFileName, setSavedScheduleFileName] = useState<string | null>(null);
 
     // Auto-load saved data when user logs in
     useEffect(() => {
@@ -48,19 +53,35 @@ export default function Home() {
         }
     }, [user, authLoading, dataLoaded]);
 
-    // Auto-save profile when university or campus changes
+    // Auto-save for first-time users only
+    // If they don't have a saved profile yet, save their first selection
     useEffect(() => {
-        if (user && selectedUniversity && selectedCampus && dataLoaded) {
-            saveProfile();
+        if (user && !hasSavedProfile && selectedUniversity && selectedCampus && dataLoaded) {
+            saveInitialPreferences();
         }
-    }, [selectedUniversity, selectedCampus, user, dataLoaded]);
+    }, [selectedUniversity, selectedCampus, user, hasSavedProfile, dataLoaded]);
 
-    // Auto-save schedule when classes change
-    useEffect(() => {
-        if (user && classes.length > 0 && uploadedFile && dataLoaded) {
-            saveSchedule();
+    const saveInitialPreferences = async () => {
+        if (!selectedUniversity || !selectedCampus || hasSavedProfile) return;
+        
+        try {
+            const res = await fetch('/api/user/profile', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    university: selectedUniversity,
+                    campus: selectedCampus,
+                }),
+            });
+            
+            if (res.ok) {
+                console.log('✅ Saved initial preferences');
+                setHasSavedProfile(true); // Prevent further auto-saves
+            }
+        } catch (err) {
+            console.error('Error saving initial preferences:', err);
         }
-    }, [classes, user, dataLoaded]);
+    };
 
     const loadSavedData = async () => {
         try {
@@ -68,9 +89,10 @@ export default function Home() {
             const profileRes = await fetch('/api/user/profile');
             if (profileRes.ok) {
                 const { profile } = await profileRes.json();
-                if (profile) {
-                    setSelectedUniversity(profile.university);
-                    setSelectedCampus(profile.campus);
+                if (profile && (profile.university || profile.campus)) {
+                    setSelectedUniversity(profile.university || "");
+                    setSelectedCampus(profile.campus || "");
+                    setHasSavedProfile(true);
                     console.log('✅ Loaded saved profile:', profile);
                 }
             }
@@ -81,11 +103,8 @@ export default function Home() {
                 const { schedule } = await scheduleRes.json();
                 if (schedule) {
                     setClasses(schedule.parsed_classes);
-                    setUploadedFile({
-                        base64: '',
-                        mimeType: '',
-                        name: schedule.file_name,
-                    });
+                    setSavedScheduleFileName(schedule.file_name);
+                    setUsesSavedSchedule(true);
                     console.log('✅ Loaded saved schedule:', schedule.file_name);
                 }
             }
@@ -97,37 +116,7 @@ export default function Home() {
         }
     };
 
-    const saveProfile = async () => {
-        try {
-            await fetch('/api/user/profile', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    university: selectedUniversity,
-                    campus: selectedCampus,
-                }),
-            });
-            console.log('💾 Saved profile');
-        } catch (err) {
-            console.error('Error saving profile:', err);
-        }
-    };
-
-    const saveSchedule = async () => {
-        try {
-            await fetch('/api/user/schedule', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    fileName: uploadedFile!.name,
-                    parsedClasses: classes,
-                }),
-            });
-            console.log('💾 Saved schedule');
-        } catch (err) {
-            console.error('Error saving schedule:', err);
-        }
-    };
+    // Removed auto-save functions - saving only happens in Profile page
 
     // Get unique university names (grouped by shortName)
     const getUniversityNames = () => {
@@ -229,38 +218,83 @@ export default function Home() {
     };
 
     const handleAnalyze = async () => {
-        if (!uploadedFile) return;
-
         setStatus("loading");
         setError(null);
 
         try {
-            setLoadingStep("Parsing schedule with AI...");
+            let parsedClasses: ParsedClass[];
 
-            const response = await processSchedule(uploadedFile.base64, uploadedFile.mimeType);
+            // Check if using saved schedule or uploading new file
+            if (user && usesSavedSchedule && classes.length > 0) {
+                // Using saved schedule - classes are already parsed
+                setLoadingStep("Using saved schedule...");
+                parsedClasses = classes;
+            } else if (uploadedFile) {
+                // Uploading new file - need to parse
+                setLoadingStep("Parsing schedule with AI...");
+                const response = await processSchedule(uploadedFile.base64, uploadedFile.mimeType);
 
-            if (response.success && response.data) {
-                const parsedClasses = response.data;
-                setClasses(parsedClasses);
-
-                const university = getSelectedUniversityData();
-                if (!university) {
+                if (response.success && response.data) {
+                    parsedClasses = response.data;
+                    setClasses(parsedClasses);
+                    
+                    // Auto-save schedule for first-time users
+                    if (user && !savedScheduleFileName && uploadedFile) {
+                        try {
+                            await fetch('/api/user/schedule', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    fileName: uploadedFile.name,
+                                    parsedClasses: parsedClasses,
+                                }),
+                            });
+                            console.log('✅ Saved initial schedule');
+                        } catch (err) {
+                            console.error('Error saving initial schedule:', err);
+                        }
+                    }
+                } else {
                     setStatus("error");
-                    setError("Selected university not found. Please select a valid campus from the list.");
+                    setError(response.error || "Failed to parse schedule.");
                     setLoadingStep("");
                     return;
                 }
+            } else {
+                setStatus("error");
+                setError("Please upload a schedule or use your saved schedule.");
+                setLoadingStep("");
+                return;
+            }
 
-                const actualDay = resolveAnalysisDay(selectedDay);
-                const analysisDate = getDateForAnalysisDay(selectedDay);
-                const dayClasses = filterClassesByDay(parsedClasses, actualDay);
+            const university = getSelectedUniversityData();
+            if (!university) {
+                setStatus("error");
+                setError("Selected university not found. Please select a valid campus from the list.");
+                setLoadingStep("");
+                return;
+            }
 
-                if (dayClasses.length === 0) {
-                    setStatus("error");
-                    setError(`No classes found for ${getDayOptions().find(opt => opt.value === selectedDay)?.label || selectedDay}.`);
-                    setLoadingStep("");
-                    return;
-                }
+            const actualDay = resolveAnalysisDay(selectedDay);
+            const analysisDate = getDateForAnalysisDay(selectedDay);
+            
+            console.log('🔍 Debug Info:');
+            console.log('Selected Day:', selectedDay);
+            console.log('Actual Day (resolved):', actualDay);
+            console.log('Total Parsed Classes:', parsedClasses.length);
+            console.log('All Classes:', parsedClasses.map(c => ({ name: c.name, days: c.days })));
+            
+            const dayClasses = filterClassesByDay(parsedClasses, actualDay);
+            
+            console.log('Filtered Classes for', actualDay, ':', dayClasses.length);
+            console.log('Filtered Classes:', dayClasses.map(c => ({ name: c.name, days: c.days })));
+
+            if (dayClasses.length === 0) {
+                setStatus("error");
+                setError(`No classes found for ${getDayOptions().find(opt => opt.value === selectedDay)?.label || selectedDay}.`);
+                setLoadingStep("");
+                return;
+            }
 
                 setLoadingStep(`Fetching weather data for ${university.shortName}...`);
                 let weatherData;
@@ -294,28 +328,40 @@ export default function Home() {
                 const attireResponse = await generateAttireRecommendationsAction(matches);
 
                 if (attireResponse.success && attireResponse.data) {
-                    setClassAttireRecommendations(attireResponse.data);
+                    const attireRecs = attireResponse.data;
+                    setClassAttireRecommendations(attireRecs);
 
                     setLoadingStep("Finalizing outfit strategy...");
-                    const masterResponse = await generateMasterRecommendationAction(attireResponse.data);
+                    const masterResponse = await generateMasterRecommendationAction(attireRecs);
 
+                    let masterRec = null;
                     if (masterResponse.success && masterResponse.data) {
-                        setMasterRecommendation(masterResponse.data);
+                        masterRec = masterResponse.data;
+                        setMasterRecommendation(masterRec);
                     }
+
+                    // Save analysis results to sessionStorage using local variables
+                    const analysisResults = {
+                        classWeatherMatches: matches,
+                        classAttireRecommendations: attireRecs,
+                        masterRecommendation: masterRec,
+                        fullWeatherData: weatherData,
+                        selectedDay,
+                        universityName: university.shortName,
+                    };
+                    sessionStorage.setItem('analysisResults', JSON.stringify(analysisResults));
+
+                    setStatus("success");
+                    setLoadingStep("");
+
+                    // Redirect to analysis page
+                    router.push('/analysis');
                 } else {
                     setStatus("error");
                     setError("Failed to generate recommendations. Please try again.");
                     setLoadingStep("");
                     return;
                 }
-
-                setStatus("success");
-                setLoadingStep("");
-            } else {
-                setStatus("error");
-                setError(response.error || "Failed to parse schedule.");
-                setLoadingStep("");
-            }
         } catch (err) {
             console.error("Analysis error:", err);
             setStatus("error");
@@ -370,6 +416,62 @@ export default function Home() {
                             exit={{ opacity: 0, scale: 1.05, filter: "blur(10px)" }}
                             className="space-y-6"
                         >
+                            {/* Info boxes for logged-in users */}
+                            {user && !hasSavedProfile && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="p-4 bg-primary/10 border border-primary/20 rounded-xl"
+                                >
+                                    <p className="text-sm text-primary-foreground/80">
+                                        👋 <strong>Welcome!</strong> Your first university selection will be automatically saved as your primary preference. 
+                                        You can manage this anytime in your <a href="/profile" className="underline hover:text-white font-semibold">Profile</a>.
+                                    </p>
+                                </motion.div>
+                            )}
+                            
+                            {user && hasSavedProfile && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl"
+                                >
+                                    <p className="text-sm text-blue-200">
+                                        💡 <strong>Quick Analysis:</strong> Changes here are temporary and won't affect your saved preferences. 
+                                        To update your default settings, visit your <a href="/profile" className="underline hover:text-blue-100">Profile</a>.
+                                    </p>
+                                </motion.div>
+                            )}
+
+                            {!user && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="p-4 bg-white/5 border border-white/10 rounded-xl"
+                                >
+                                    <div className="flex items-start gap-3">
+                                        <Sparkles className="w-5 h-5 text-yellow-400 shrink-0 mt-0.5" />
+                                        <div className="space-y-1">
+                                            <p className="text-sm text-white/80 font-medium">
+                                                Go unlimited with an account!
+                                            </p>
+                                            <p className="text-xs text-white/50 leading-relaxed">
+                                                Log in to save your university, campus, and full schedule permanently. 
+                                                You can still use Stratus as a guest right now, but your selections won't be saved for next time.
+                                            </p>
+                                            <div className="pt-2">
+                                                <a 
+                                                    href="/api/auth/login" 
+                                                    className="text-xs font-bold text-primary hover:text-primary/80 transition-colors flex items-center gap-1"
+                                                >
+                                                    Sign up or Login <LogIn className="w-3 h-3" />
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            )}
+
                             {/* Campus Selection */}
                             <GlassCard delay={0.1}>
                                 <div className="flex items-center gap-3 mb-4">
@@ -450,21 +552,86 @@ export default function Home() {
                                 </div>
                             </GlassCard>
 
-                            {/* File Upload */}
+                            {/* Schedule Selection */}
                             <GlassCard delay={0.3}>
                                 <div className="flex items-center gap-3 mb-4">
                                     <Cloud className="text-primary w-5 h-5" />
-                                    <h2 className="text-xl font-semibold">Upload Schedule</h2>
+                                    <h2 className="text-xl font-semibold">Schedule</h2>
                                 </div>
-                                <FileUpload
-                                    onFileSelect={handleFileChange}
-                                    uploadedFileName={uploadedFile?.name}
-                                    disabled={status === "loading" || !getSelectedUniversityData()}
-                                />
-                                {!getSelectedUniversityData() && (
-                                    <p className="mt-2 text-sm text-red-400 flex items-center gap-2">
-                                        <AlertCircle className="w-3 h-3" /> Please select a campus first
-                                    </p>
+
+                                {user && savedScheduleFileName ? (
+                                    // Logged in with saved schedule
+                                    <div className="space-y-4">
+                                        {/* Toggle between saved and upload */}
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => setUsesSavedSchedule(true)}
+                                                disabled={status === "loading"}
+                                                className={`flex-1 px-4 py-3 rounded-xl font-medium transition-all ${
+                                                    usesSavedSchedule
+                                                        ? "bg-primary text-white"
+                                                        : "bg-white/5 text-white/60 hover:bg-white/10"
+                                                } disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer`}
+                                            >
+                                                Use Saved Schedule
+                                            </button>
+                                            <button
+                                                onClick={() => setUsesSavedSchedule(false)}
+                                                disabled={status === "loading"}
+                                                className={`flex-1 px-4 py-3 rounded-xl font-medium transition-all ${
+                                                    !usesSavedSchedule
+                                                        ? "bg-primary text-white"
+                                                        : "bg-white/5 text-white/60 hover:bg-white/10"
+                                                } disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer`}
+                                            >
+                                                Upload New
+                                            </button>
+                                        </div>
+
+                                        {usesSavedSchedule ? (
+                                            // Show saved schedule info
+                                            <div className="p-4 bg-white/5 border border-white/10 rounded-xl">
+                                                <div className="flex items-center justify-between">
+                                                    <div>
+                                                        <p className="text-sm text-white/60 mb-1">Your Saved Schedule</p>
+                                                        <p className="font-medium text-lg">
+                                                            {classes.length} {classes.length === 1 ? 'Class' : 'Classes'} Loaded
+                                                        </p>
+                                                        <p className="text-xs text-white/40 mt-1">
+                                                            Ready to analyze
+                                                        </p>
+                                                    </div>
+                                                    <a
+                                                        href="/profile"
+                                                        className="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-sm transition-all"
+                                                    >
+                                                        Edit Schedule
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            // Show upload option
+                                            <FileUpload
+                                                onFileSelect={handleFileChange}
+                                                uploadedFileName={!usesSavedSchedule ? uploadedFile?.name : undefined}
+                                                disabled={status === "loading" || !getSelectedUniversityData()}
+                                            />
+                                        )}
+                                    </div>
+                                ) : (
+                                    // Not logged in or no saved schedule - show upload only
+                                    <>
+                                        <FileUpload
+                                            onFileSelect={handleFileChange}
+                                            uploadedFileName={uploadedFile?.name}
+                                            disabled={status === "loading" || !getSelectedUniversityData()}
+                                        />
+                                        {!getSelectedUniversityData() && (
+                                            <p className="mt-2 text-sm text-red-400 flex items-center gap-2">
+                                                <AlertCircle className="w-3 h-3" /> Please select a campus first
+                                            </p>
+                                        )}
+                                    </>
                                 )}
                             </GlassCard>
 
@@ -477,7 +644,11 @@ export default function Home() {
                             >
                                 <AnimatedButton
                                     onClick={handleAnalyze}
-                                    disabled={status === "loading" || !getSelectedUniversityData() || !uploadedFile}
+                                    disabled={
+                                        status === "loading" || 
+                                        !getSelectedUniversityData() || 
+                                        (!uploadedFile && !(user && usesSavedSchedule && classes.length > 0))
+                                    }
                                     className="w-full text-lg py-4 shadow-2xl"
                                 >
                                     {status === "loading" ? (

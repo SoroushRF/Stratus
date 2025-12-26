@@ -16,6 +16,9 @@ export async function POST(request: NextRequest) {
     const decodedPayload = JSON.parse(Buffer.from(payload, 'base64').toString());
     
     const userId = decodedPayload.sub;
+    const userEmail = decodedPayload.email;
+    const userName = decodedPayload.name;
+    const userPicture = decodedPayload.picture;
 
     // Get request body
     const body = await request.json();
@@ -23,6 +26,24 @@ export async function POST(request: NextRequest) {
 
     if (!fileName || !parsedClasses) {
       return NextResponse.json({ error: 'File name and parsed classes are required' }, { status: 400 });
+    }
+
+    // Ensure user exists in database
+    const { error: userError } = await supabaseAdmin
+      .from('users')
+      .upsert({
+        id: userId,
+        email: userEmail,
+        name: userName,
+        picture: userPicture,
+        updated_at: new Date().toISOString(),
+      }, {
+        onConflict: 'id',
+      });
+
+    if (userError) {
+      console.error('Error upserting user:', userError);
+      return NextResponse.json({ error: 'Failed to save user' }, { status: 500 });
     }
 
     // Delete all previous schedules for this user

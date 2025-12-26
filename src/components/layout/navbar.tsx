@@ -35,12 +35,15 @@ export function Navbar() {
                                 </span>
                             </div>
                             <div className="flex items-center gap-2">
-                                <button className="flex h-10 w-10 items-center justify-center rounded-full glass hover:bg-white/10 transition-all">
+                                <Link 
+                                    href="/profile"
+                                    className="flex h-10 w-10 items-center justify-center rounded-full glass hover:bg-white/10 transition-all cursor-pointer"
+                                >
                                     <User className="h-5 w-5 text-muted-foreground" />
-                                </button>
+                                </Link>
                                 <button 
                                     onClick={logout}
-                                    className="flex items-center gap-2 px-4 py-2 rounded-lg glass hover:bg-white/10 transition-all text-sm font-medium"
+                                    className="flex items-center gap-2 px-4 py-2 rounded-lg glass hover:bg-white/10 transition-all text-sm font-medium cursor-pointer"
                                 >
                                     <LogOut className="h-4 w-4" />
                                     <span className="hidden md:inline">Logout</span>

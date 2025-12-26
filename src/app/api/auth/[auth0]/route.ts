@@ -75,7 +75,13 @@ export async function GET(request: NextRequest) {
   // Handle logout
   if (auth0Route === 'logout') {
     console.log('🚪 Logging out...');
-    const response = NextResponse.json({ success: true });
+    
+    // Dynamically determine the base URL from the request for redirect
+    const protocol = request.headers.get('x-forwarded-proto') || 'http';
+    const host = request.headers.get('x-forwarded-host') || request.headers.get('host') || 'localhost:3000';
+    const baseUrl = `${protocol}://${host}`;
+
+    const response = NextResponse.redirect(baseUrl);
     
     // Delete the session cookie by setting it to expire
     response.cookies.set('auth0_session', '', {
@@ -86,7 +92,7 @@ export async function GET(request: NextRequest) {
       expires: new Date(0), // Set to past date
     });
     
-    console.log('✅ Session cookie cleared');
+    console.log('✅ Session cookie cleared and redirecting home');
     return response;
   }
 
