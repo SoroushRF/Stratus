@@ -614,7 +614,7 @@ export default function Home() {
                                             <FileUpload
                                                 onFileSelect={handleFileChange}
                                                 uploadedFileName={!usesSavedSchedule ? uploadedFile?.name : undefined}
-                                                disabled={status === "loading" || !getSelectedUniversityData()}
+                                                disabled={status === "loading"}
                                             />
                                         )}
                                     </div>
@@ -624,13 +624,8 @@ export default function Home() {
                                         <FileUpload
                                             onFileSelect={handleFileChange}
                                             uploadedFileName={uploadedFile?.name}
-                                            disabled={status === "loading" || !getSelectedUniversityData()}
+                                            disabled={status === "loading"}
                                         />
-                                        {!getSelectedUniversityData() && (
-                                            <p className="mt-2 text-sm text-red-400 flex items-center gap-2">
-                                                <AlertCircle className="w-3 h-3" /> Please select a campus first
-                                            </p>
-                                        )}
                                     </>
                                 )}
                             </GlassCard>
