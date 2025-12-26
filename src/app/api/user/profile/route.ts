@@ -3,22 +3,37 @@ import { supabaseAdmin } from '@/lib/supabase';
 
 export async function POST(request: NextRequest) {
   try {
+    // Log all cookies for debugging
+    console.log('All cookies:', request.cookies.getAll().map(c => c.name));
+    
     // Get user from session cookie
     const sessionCookie = request.cookies.get('auth0_session');
     
     if (!sessionCookie) {
+      console.error('No auth0_session cookie found');
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    const session = JSON.parse(sessionCookie.value);
-    const idToken = session.id_token;
-    const payload = idToken.split('.')[1];
-    const decodedPayload = JSON.parse(Buffer.from(payload, 'base64').toString());
+    console.log('Session cookie value length:', sessionCookie.value.length);
+
+    let userId, userEmail, userName, userPicture;
     
-    const userId = decodedPayload.sub;
-    const userEmail = decodedPayload.email;
-    const userName = decodedPayload.name;
-    const userPicture = decodedPayload.picture;
+    try {
+      const session = JSON.parse(sessionCookie.value);
+      const idToken = session.id_token;
+      const payload = idToken.split('.')[1];
+      const decodedPayload = JSON.parse(Buffer.from(payload, 'base64').toString());
+      
+      userId = decodedPayload.sub;
+      userEmail = decodedPayload.email;
+      userName = decodedPayload.name;
+      userPicture = decodedPayload.picture;
+      
+      console.log('Decoded user:', { userId, userEmail, userName });
+    } catch (parseError) {
+      console.error('Error parsing session:', parseError);
+      return NextResponse.json({ error: 'Invalid session format' }, { status: 401 });
+    }
 
     // Get request body
     const body = await request.json();
@@ -27,6 +42,8 @@ export async function POST(request: NextRequest) {
     if (!university || !campus) {
       return NextResponse.json({ error: 'University and campus are required' }, { status: 400 });
     }
+
+    console.log('Upserting user:', userId);
 
     // Upsert user (create if doesn't exist, update if exists)
     const { error: userError } = await supabaseAdmin
@@ -43,8 +60,10 @@ export async function POST(request: NextRequest) {
 
     if (userError) {
       console.error('Error upserting user:', userError);
-      return NextResponse.json({ error: 'Failed to save user' }, { status: 500 });
+      return NextResponse.json({ error: 'Failed to save user', details: userError.message }, { status: 500 });
     }
+
+    console.log('User upserted successfully');
 
     // Upsert user profile
     const { data, error: profileError } = await supabaseAdmin
@@ -62,13 +81,15 @@ export async function POST(request: NextRequest) {
 
     if (profileError) {
       console.error('Error upserting profile:', profileError);
-      return NextResponse.json({ error: 'Failed to save profile' }, { status: 500 });
+      return NextResponse.json({ error: 'Failed to save profile', details: profileError.message }, { status: 500 });
     }
+
+    console.log('Profile saved successfully');
 
     return NextResponse.json({ success: true, profile: data });
   } catch (error) {
     console.error('Error saving profile:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
   }
 }
 
