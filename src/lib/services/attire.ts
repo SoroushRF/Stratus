@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { ParsedClass, HourlyForecast, AttireRecommendation, MasterRecommendation, ClassAttireRecommendation } from "@/types";
+import AIConfigService from "./ai-config";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
@@ -10,10 +11,6 @@ export async function generateAttireRecommendation(
   classInfo: ParsedClass,
   weather: HourlyForecast | null
 ): Promise<AttireRecommendation> {
-  const model = genAI.getGenerativeModel({ 
-    model: "gemini-2.5-flash-lite",
-  });
-
   // Calculate class duration
   const [startHour, startMin] = classInfo.startTime.split(":").map(Number);
   const [endHour, endMin] = classInfo.endTime.split(":").map(Number);
@@ -25,44 +22,28 @@ export async function generateAttireRecommendation(
   if (startHour >= 12 && startHour < 17) timeOfDay = "afternoon";
   else if (startHour >= 17) timeOfDay = "evening";
 
-  const prompt = `You are a practical campus fashion advisor for Canadian university students.
-
-CLASS CONTEXT:
-- Class: ${classInfo.name}
-- Time: ${classInfo.startTime} - ${classInfo.endTime} (${durationHours}h duration)
-- Time of Day: ${timeOfDay}
-- Location: ${classInfo.location || "Campus building"}
-
-WEATHER CONDITIONS:
-${weather ? `
+  const startTime = Date.now();
+  const slug = 'attire-advisor';
+  const modelName = await AIConfigService.getModel(slug);
+  
+  const weatherContext = weather ? `
 - Condition: ${weather.condition}
 - Temperature: ${weather.temp}°C
 - Feels Like: ${weather.feelsLike}°C
 - Wind Speed: ${weather.windSpeed} km/h
 - Humidity: ${weather.humidity}%
-` : "Weather data unavailable - assume typical campus conditions"}
+` : "Weather data unavailable - assume typical campus conditions";
 
-TASK:
-Generate a practical clothing recommendation considering:
-1. **Campus Practicality**: Walking between buildings, sitting in lectures, indoor heating
-2. **Canadian Winter Realities**: Wind chill, sudden weather changes, overheated classrooms
-3. **Comfort vs. Style**: Balance looking good with staying comfortable for ${durationHours} hours
-4. **Class Duration**: Longer classes need more comfort considerations
+  const prompt = await AIConfigService.getPrompt(slug, {
+    className: classInfo.name,
+    timeSpan: `${classInfo.startTime} - ${classInfo.endTime}`,
+    duration: durationHours,
+    timeOfDay,
+    location: classInfo.location || "Campus building",
+    weatherContext
+  });
 
-Return ONLY valid JSON matching this exact schema:
-{
-  "recommendation": "Brief outfit description (1-2 sentences)",
-  "reasoning": "Why this outfit works for these conditions (1 sentence)",
-  "accessories": ["Item 1", "Item 2"],
-  "priority": "essential" or "suggested"
-}
-
-Rules:
-- "essential" priority = weather requires specific protection (rain, extreme cold, etc.)
-- "suggested" priority = general comfort recommendations
-- Keep recommendations practical and campus-appropriate
-- Focus on layering for indoor/outdoor transitions
-- Accessories should be genuinely useful, not decorative`;
+  const model = genAI.getGenerativeModel({ model: modelName });
 
   try {
     const result = await model.generateContent(prompt);
@@ -80,6 +61,13 @@ Rules:
     // Parse JSON response
     const recommendation = JSON.parse(jsonMatch[0]) as AttireRecommendation;
     
+    await AIConfigService.logExecution({
+      slug,
+      status: 'success',
+      latencyMs: Date.now() - startTime,
+      modelUsed: modelName
+    });
+    
     // Validate structure
     if (!recommendation.recommendation || !recommendation.reasoning || !recommendation.priority) {
       console.error("Invalid recommendation structure:", recommendation);
@@ -93,6 +81,14 @@ Rules:
       error,
       className: classInfo.name,
       weather: weather ? `${weather.temp}°C, ${weather.condition}` : "null"
+    });
+
+    await AIConfigService.logExecution({
+      slug,
+      status: 'failure',
+      errorMessage: (error as Error).message,
+      latencyMs: Date.now() - startTime,
+      modelUsed: modelName
     });
     
     // Fallback recommendation
@@ -225,47 +221,30 @@ export async function generateMasterRecommendation(
   const latestClass = endTimes.sort().reverse()[0];
 
   // Build context for AI
-  const model = genAI.getGenerativeModel({ 
-    model: "gemini-2.5-flash-lite",
-  });
+  const startTimeExec = Date.now();
+  const slug = 'master-recommendation';
+  const modelName = await AIConfigService.getModel(slug);
 
-  const prompt = `You are a practical campus fashion advisor creating a MASTER outfit recommendation for an entire day.
-
-DAILY CONTEXT:
-- Number of classes: ${recommendations.length}
-- Time span: ${earliestClass} to ${latestClass}
-- Temperature range: ${minTemp}°C to ${maxTemp}°C (feels like ${minFeelsLike}°C at coldest)
-- Weather conditions: ${conditions.join(", ")}
-- Max wind speed: ${maxWind} km/h
-
-INDIVIDUAL CLASS RECOMMENDATIONS:
-${recommendations.map((r, i) => `
+  const classRecommendationsStr = recommendations.map((r, i) => `
 ${i + 1}. ${r.class.name} (${r.class.startTime})
    - Weather: ${r.weather ? `${r.weather.temp}°C, ${r.weather.condition}` : "N/A"}
    - Recommendation: ${r.attire.recommendation}
    - Accessories: ${r.attire.accessories.join(", ") || "None"}
-`).join("")}
+`).join("");
 
-TASK:
-Create ONE master outfit that works for ALL classes. Focus on:
-1. **Layering Strategy**: How to adjust for temperature changes (${minTemp}°C → ${maxTemp}°C)
-2. **Worst-Case Protection**: Handle the coldest/windiest/wettest conditions
-3. **Indoor Comfort**: Account for overheated classrooms
-4. **Campus Practicality**: Easy to adjust between classes
+  const prompt = await AIConfigService.getPrompt(slug, {
+    classCount: recommendations.length,
+    earliest: earliestClass,
+    latest: latestClass,
+    minTemp,
+    maxTemp,
+    minFeelsLike,
+    conditions: conditions.join(", "),
+    maxWind,
+    classRecommendations: classRecommendationsStr
+  });
 
-Return ONLY valid JSON matching this exact schema:
-{
-  "baseOutfit": "Core outfit description (jacket, pants, shoes)",
-  "layeringStrategy": "How to adjust throughout the day (what to add/remove when)",
-  "essentialAccessories": ["Item 1", "Item 2"],
-  "reasoning": "Why this outfit works for the entire day (1-2 sentences)"
-}
-
-Rules:
-- Base outfit should handle the worst conditions
-- Layering strategy should explain when to add/remove layers
-- Essential accessories are items you MUST bring
-- Keep it practical and campus-appropriate`;
+  const model = genAI.getGenerativeModel({ model: modelName });
 
   try {
     const result = await model.generateContent(prompt);
@@ -282,6 +261,13 @@ Rules:
     
     const masterRec = JSON.parse(jsonMatch[0]);
     
+    await AIConfigService.logExecution({
+      slug,
+      status: 'success',
+      latencyMs: Date.now() - startTimeExec,
+      modelUsed: modelName
+    });
+    
     return {
       baseOutfit: masterRec.baseOutfit || "Layered campus attire",
       layeringStrategy: masterRec.layeringStrategy || "Adjust layers as needed",
@@ -295,6 +281,14 @@ Rules:
     };
   } catch (error) {
     console.error("Master Recommendation Error:", error);
+
+    await AIConfigService.logExecution({
+      slug,
+      status: 'failure',
+      errorMessage: (error as Error).message,
+      latencyMs: Date.now() - startTimeExec,
+      modelUsed: modelName
+    });
     
     // Fallback: rule-based master recommendation
     let baseOutfit = "";

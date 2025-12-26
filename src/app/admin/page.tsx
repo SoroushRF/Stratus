@@ -200,6 +200,8 @@ export default function AdminDashboard() {
                         onClick={() => {
                             if (module.title === "University Database") {
                                 window.location.href = "/admin/universities";
+                            } else if (module.title === "AI Logic Control") {
+                                window.location.href = "/admin/ai";
                             }
                         }}
                     >
