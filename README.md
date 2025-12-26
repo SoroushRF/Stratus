@@ -12,6 +12,10 @@
     <a href="https://auth0.com"><img src="https://img.shields.io/badge/Auth0-Security-EB5424?style=for-the-badge&logo=auth0" alt="Auth0" /></a>
     <a href="https://deepmind.google/technologies/gemini/"><img src="https://img.shields.io/badge/Gemini-AI-8E75B2?style=for-the-badge&logo=google-gemini" alt="Gemini AI" /></a>
     <a href="#-the-quality-assurance-lab"><img src="https://img.shields.io/badge/Tests-102%20Passing-emerald?style=for-the-badge&logo=vitest" alt="Tests" /></a>
+    <!-- NEW BADGE CI -->
+    <a href="https://github.com/SoroushRF/Stratus/actions"><img src="https://img.shields.io/badge/CI%20Build-Passing-emerald?style=for-the-badge&logo=github-actions" alt="CI Build" /></a>
+    <!-- NEW BADGE LICENSE -->
+    <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge" alt="License" /></a>
   </p>
 
   <p><i>Building the future of personal preparation through intelligent context.</i></p>
@@ -28,16 +32,19 @@
 - [🛠️ The Arsenal (Tech Stack)](#-the-arsenal-tech-stack)
 - [🧩 Core Intelligence Engine](#-core-intelligence-engine)
 - [🛡️ The Enterprise Admin Nexus](#️-the-enterprise-admin-nexus)
-  - [Technological Governance](#technological-governance)
-  - [User & Data Sovereignty](#user--data-sovereignty)
-  - [Operations Command Center](#operations-command-center)
 - [🧪 The Quality Assurance Lab](#-the-quality-assurance-lab)
-  - [Testing Philosophy](#testing-philosophy)
-  - [The E2E Testing Pipeline](#the-e2e-testing-pipeline)
-  - [Metric: 102 Tests Passing](#metric-102-tests-passing)
+- [💾 Database Architecture](#-database-architecture)
 - [🔐 Security & Compliance](#-security--compliance)
-- [🚀 Quick Start Guide](#-quick-start-guide)
+- [🚀 Local Development](#-local-development)
+  - [Prerequisites](#prerequisites)
+  - [Environment Setup](#environment-setup)
+  - [Database Seeding](#database-seeding)
+  - [Running the App](#running-the-app)
+- [☁️ Deployment](#️-deployment)
+- [� API & Server Actions](#-api--server-actions)
+- [🤝 Contributing](#-contributing)
 - [🛣️ Roadmap](#️-roadmap)
+- [❓ FAQ & Troubleshooting](#-faq--troubleshooting)
 
 ---
 
@@ -156,66 +163,129 @@ As of the latest build, Stratus boasts a **100% Green** status across **102 dist
 
 This suite is runnable directly from the Admin Dashboard, streaming logs via Server-Sent Events (SSE) so non-technical stakeholders can verify system health.
 
+#### Run Tests Locally
+```bash
+npm run test        # Run Unit & Integration Tests (Vitest)
+npm run test:e2e    # Run E2E Tests (Playwright)
+npm run test:ui     # Open Vitest UI
+```
+
 ---
 
-## 🔐 Security & Compliance
+## � Database Architecture
+
+Our Supabase (PostgreSQL) schema relies on a user-centric relational model.
+
+| Table | Description | Key Fields |
+| :--- | :--- | :--- |
+| **users** | Core profile linked to Auth0 ID | `id` (PK), `email`, `university_id`, `onboarding_completed` |
+| **schedules** | Parsed daily schedules | `id` (PK), `user_id` (FK), `raw_content` (Text/JSON), `is_active` |
+| **universities** | Geo-spatial campus data | `id` (PK), `name`, `latitude`, `longitude`, `timezone` |
+| **notices** | System-wide broadcasts | `id` (PK), `message`, `type` (info/crit), `is_active` |
+| **admin_audit** | Security logs for admin actions | `id`, `admin_id`, `action`, `resource`, `timestamp` |
+
+> See [docs/architecture.md](./docs/architecture.md) for the full Entity-Relationship Diagram (ERD).
+
+---
+
+## �🔐 Security & Compliance
 
 Stratus handles sensitive user data (location habits, schedules). We treat security as paramount.
 
 - **Authentication**: **Auth0** handles identity management (OIDC compliant). We never touch passwords.
 - **Database Security**:
-  - **RLS (Row Level Security)**: Every query to Supabase is filtered by the standard `auth.uid()` policy. A user physically *cannot* fetch another user's schedule, even if they manipulate the API client.
-  - **Policy Enforcement**: `SELECT`, `INSERT`, `UPDATE` policies are strictly defined in `SECURITY_RLS_POLICIES.sql`.
+  - **RLS (Row Level Security)**: Every query to Supabase is filtered by the standard `auth.uid()` policy plus custom security definers. A user physically *cannot* fetch another user's schedule.
+  - **Policy Enforcement**: `SELECT`, `INSERT`, `UPDATE` policies are strictly defined in [`SECURITY_RLS_POLICIES.sql`](./SECURITY_RLS_POLICIES.sql).
 - **Environment Isolation**: API Keys (Gemini, Tomorrow.io) are kept server-side. The client never sees a raw API token.
 
 ---
 
-## 🚀 Quick Start Guide
+## 🚀 Local Development
 
-### 1. Requirements
-- Node.js 18+ (LTS Recommended)
-- npm or pnpm
-- A Google Cloud Project (for Gemini API)
-- A Supabase Project
+### Prerequisites
+- **Node.js** v18.x (LTS) or higher
+- **npm** (v9+) or **pnpm**
+- **Git**
 
-### 2. Installation
+### Environment Setup
+1.  **Clone the repository**:
+    ```bash
+    git clone https://github.com/soroushrf/stratus.git
+    cd stratus
+    ```
+2.  **Install dependencies**:
+    ```bash
+    npm install
+    # or
+    pnpm install
+    ```
+3.  **Configure Environment**:
+    Copy the example file and fill in your secrets.
+    ```bash
+    cp .env.example .env
+    ```
+    > **Note**: You will need API keys for Google Gemini, Tomorrow.io, and a Supabase instance URL/Key. See [Getting API Keys](#how-to-get-api-keys) below.
+
+### Database Seeding
+To spin up a local admin user or standard test user:
 ```bash
-# Clone the repository
-git clone https://github.com/soroushrf/stratus.git
-
-# Enter the stratosphere
-cd stratus
-
-# Install dependencies like a pro
-npm install
+# (Placeholder script) - Use Supabase Dashboard for now or run:
+# npm run seed
+# TODO: Implement local seed script
 ```
+*Tip: To create an admin, manually update the `is_admin` flag in your local Supabase `users` table row.*
 
-### 3. Configuration
-Create a `.env` file in the root. Do not commit this file.
-```env
-# --- Intelligence Core ---
-GEMINI_API_KEY="AIzaSy..."
-WEATHER_API_KEY="wXyZ..."
-
-# --- Database Layer ---
-NEXT_PUBLIC_SUPABASE_URL="https://xyz.supabase.co"
-NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJhh..."
-SUPABASE_SERVICE_ROLE_KEY="eyJhb..."
-
-# --- Identity Layer ---
-AUTH0_SECRET='long_random_string'
-AUTH0_BASE_URL='http://localhost:3000'
-AUTH0_ISSUER_BASE_URL='https://dev-xyz.us.auth0.com'
-AUTH0_CLIENT_ID='abc...'
-AUTH0_CLIENT_SECRET='123...'
-```
-
-### 4. Launch
+### Running the App
 ```bash
-# Ignite the development server
 npm run dev
 ```
-Visit `http://localhost:3000` to begin the experience.
+Access the application at `http://localhost:3000`.
+
+### Quick Commands Table
+
+| Command | Description |
+| :--- | :--- |
+| `npm run dev` | Start local dev server with Hot Module Replacement |
+| `npm run build` | Compile for production (Next.js build) |
+| `npm run start` | Start production server |
+| `npm run lint` | Run ESLint check |
+| `npm run test` | Execute Vitest unit suite |
+| `npm run test:e2e` | Execute Playwright E2E suite |
+
+---
+
+## ☁️ Deployment
+
+We recommend **Vercel** for zero-configuration deployment.
+
+1.  Push your code to GitHub.
+2.  Import the project into Vercel.
+3.  Add your **Environment Variables** (copy from `.env`).
+4.  **Edge Functions**: Ensure your Supabase region is geographically close to your Vercel Function Region (e.g., `us-east-1`) to minimize latency.
+
+*Self-hosting*: You can build a Docker container using the standard Next.js Dockerfile pattern, but you will lose Edge Function capabilities unless you use a compatible runtime.
+
+---
+
+## 🔌 API & Server Actions
+
+Stratus uses **Server Actions** (`src/app/actions.ts`) for 90% of data mutations. This ensures type safety and eliminates the need for a separate API layer documentation for internal features.
+
+**Public Endpoints**:
+- `POST /api/auth/hooks`: Webhook for Auth0 Post-Registration (syncs user to Supabase).
+- `GET /api/cron/weather-cache`: (Protected) Revalidates campus weather data.
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions to the stratosphere! Please read our [CONTRIBUTING.md](./CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+
+1.  Fork the repo.
+2.  Create your feature branch (`git checkout -b feature/amazing-feature`).
+3.  Commit your changes following **Conventional Commits** (`git commit -m 'feat: add amazing feature'`).
+4.  Push to the branch.
+5.  Open a Pull Request.
 
 ---
 
@@ -234,7 +304,20 @@ Stratus is evolving. Here is our flight path for the next fiscal quarter:
 
 ---
 
+## ❓ FAQ & Troubleshooting
+
+**Q: My "Mock Mode" tests are failing?**
+A: Ensure `MOCK_AI=true` is set in your test environment. Check `src/lib/services/attire.ts` for the "Magic String" triggers.
+
+**Q: How do I get an Admin Account?**
+A: After logging in via Auth0, manually go to your Supabase `users` table and set `is_admin = true` for your UUID.
+
+**Q: I'm getting Auth0 redirect errors locally.**
+A: Ensure your `AUTH0_BASE_URL` is set to `http://localhost:3000` and that this URL is whitelisted in your Auth0 Application settings.
+
+---
+
 <div align="center">
-  <p><b>Stratus</b> is open-source software licensed under the MIT License.</p>
-  <p>Crafted with obsession by the Stratus Engineering Team.</p>
+  <p><b>Stratus</b> is open-source software licensed under the <a href="./LICENSE">MIT License</a>.</p>
+  <p>Crafted with obsession by Soroush and the Stratus Engineering Team.</p>
 </div>
