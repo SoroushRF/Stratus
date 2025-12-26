@@ -19,6 +19,10 @@ export const extractSchedule = async (
   const modelName = await AIConfigService.getModel(slug);
   const prompt = await AIConfigService.getPrompt(slug);
 
+  console.log(`\n🤖 [GEMINI] Schedule Parser Request`);
+  console.log(`   Requested Model: ${modelName}`);
+  console.log(`   Input Type: ${mimeType}`);
+
   const model = genAI.getGenerativeModel({ model: modelName });
 
   try {
@@ -35,6 +39,15 @@ export const extractSchedule = async (
     const text = result.response.text();
     const usage = result.response.usageMetadata;
     
+    // Extract actual model from response (Gemini API returns this)
+    const actualModel = (result.response as any).modelVersion || modelName;
+    
+    console.log(`   ✅ Response Received`);
+    console.log(`   Actual Model Used: ${actualModel}`);
+    console.log(`   Prompt Tokens: ${usage?.promptTokenCount || 0}`);
+    console.log(`   Completion Tokens: ${usage?.candidatesTokenCount || 0}`);
+    console.log(`   Latency: ${Date.now() - startTime}ms\n`);
+    
     const jsonMatch = text.match(/\[[\s\S]*\]/);
     const classes = jsonMatch ? (JSON.parse(jsonMatch[0]) as ParsedClass[]) : [];
 
@@ -44,14 +57,17 @@ export const extractSchedule = async (
       rawOutput: text,
       status: 'success',
       latencyMs: Date.now() - startTime,
-      modelUsed: modelName,
+      modelUsed: actualModel, // Log the actual model from API
       prompt_tokens: usage?.promptTokenCount,
       completion_tokens: usage?.candidatesTokenCount
     });
 
     return classes;
   } catch (error) {
-    console.error("Gemini Parsing Error:", error);
+    console.error(`\n❌ [GEMINI] Schedule Parser Error`);
+    console.error(`   Requested Model: ${modelName}`);
+    console.error(`   Error: ${(error as Error).message}`);
+    console.error(`   Latency: ${Date.now() - startTime}ms\n`);
     
     await AIConfigService.logExecution({
       slug,

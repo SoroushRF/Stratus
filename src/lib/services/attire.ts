@@ -52,6 +52,10 @@ export async function generateAttireRecommendation(
     weatherContext
   });
 
+  console.log(`\n👔 [GEMINI] Attire Advisor Request`);
+  console.log(`   Requested Model: ${modelName}`);
+  console.log(`   Class: ${classInfo.name}`);
+
   const model = genAI.getGenerativeModel({ model: modelName });
 
   try {
@@ -59,7 +63,14 @@ export async function generateAttireRecommendation(
     const text = result.response.text();
     const usage = result.response.usageMetadata;
     
-    console.log("Gemini Response:", text); // Debug log
+    // Extract actual model from response
+    const actualModel = (result.response as any).modelVersion || modelName;
+    
+    console.log(`   ✅ Response Received`);
+    console.log(`   Actual Model Used: ${actualModel}`);
+    console.log(`   Prompt Tokens: ${usage?.promptTokenCount || 0}`);
+    console.log(`   Completion Tokens: ${usage?.candidatesTokenCount || 0}`);
+    console.log(`   Latency: ${Date.now() - startTime}ms\n`);
     
     // Extract JSON from response (handle markdown code blocks)
     const jsonMatch = text.match(/\{[\s\S]*\}/);
@@ -75,7 +86,7 @@ export async function generateAttireRecommendation(
       slug,
       status: 'success',
       latencyMs: Date.now() - startTime,
-      modelUsed: modelName,
+      modelUsed: actualModel,
       prompt_tokens: usage?.promptTokenCount,
       completion_tokens: usage?.candidatesTokenCount
     });
@@ -86,7 +97,6 @@ export async function generateAttireRecommendation(
       throw new Error("Invalid recommendation structure");
     }
 
-    console.log("Successfully generated recommendation:", recommendation); // Debug log
     return recommendation;
   } catch (error) {
     console.error("Attire Recommendation Error Details:", {
@@ -266,6 +276,10 @@ ${i + 1}. ${r.class.name} (${r.class.startTime})
     classRecommendations: classRecommendationsStr
   });
 
+  console.log(`\n🎯 [GEMINI] Master Recommendation Request`);
+  console.log(`   Requested Model: ${modelName}`);
+  console.log(`   Classes: ${recommendations.length}`);
+
   const model = genAI.getGenerativeModel({ model: modelName });
 
   try {
@@ -273,7 +287,14 @@ ${i + 1}. ${r.class.name} (${r.class.startTime})
     const text = result.response.text();
     const usage = result.response.usageMetadata;
     
-    console.log("Master Recommendation Response:", text); // Debug log
+    // Extract actual model from response
+    const actualModel = (result.response as any).modelVersion || modelName;
+    
+    console.log(`   ✅ Response Received`);
+    console.log(`   Actual Model Used: ${actualModel}`);
+    console.log(`   Prompt Tokens: ${usage?.promptTokenCount || 0}`);
+    console.log(`   Completion Tokens: ${usage?.candidatesTokenCount || 0}`);
+    console.log(`   Latency: ${Date.now() - startTimeExec}ms\n`);
     
     // Extract JSON from response
     const jsonMatch = text.match(/\{[\s\S]*\}/);
@@ -288,7 +309,7 @@ ${i + 1}. ${r.class.name} (${r.class.startTime})
       slug,
       status: 'success',
       latencyMs: Date.now() - startTimeExec,
-      modelUsed: modelName,
+      modelUsed: actualModel,
       prompt_tokens: usage?.promptTokenCount,
       completion_tokens: usage?.candidatesTokenCount
     });
